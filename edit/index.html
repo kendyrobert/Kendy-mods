@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>Editar apps</title><link rel="icon" href="https://i.imgur.com/iU2NjpS.png">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050507;color:#ececf4;font-family:system-ui,sans-serif;padding:18px;max-width:560px;margin:auto}
+h2{margin:6px 0 14px}input{width:100%;padding:14px;margin:6px 0;border-radius:12px;border:1px solid #ffffff22;background:#0e0e15;color:#fff;font-size:15px}
+button{padding:13px 16px;border:0;border-radius:12px;color:#fff;font-weight:700;font-size:15px;background:linear-gradient(135deg,#7c5cff,#2d8bff);cursor:pointer}
+button.sec{background:#1a1a24}button.del{background:#c80f2e}button:disabled{opacity:.5}
+.card{background:#0e0e15;border:1px solid #ffffff14;border-radius:18px;padding:16px;margin:14px 0}
+.row{display:flex;gap:10px;align-items:center;margin:8px 0}.row>*{flex:1}.item{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #ffffff10}
+.item img{width:42px;height:42px;border-radius:10px;object-fit:cover;background:#1a1a24}.item div{flex:1;min-width:0}.item small{color:#7d7d92;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item button{flex:none;padding:9px 12px;font-size:13px}#msg{color:#ffb4bd;min-height:20px;font-size:14px}.hidden{display:none}
+</style></head><body>
+<h2>Editar apps</h2><p id="msg"></p>
+
+<div id="login" class="card hidden">
+  <input id="em" type="email" placeholder="Correo del administrador" autocomplete="username">
+  <input id="pw" type="password" placeholder="Contraseña" autocomplete="current-password">
+  <button id="entrar" style="width:100%;margin-top:6px">Entrar</button>
+</div>
+
+<div id="panel" class="hidden">
+  <div class="card">
+    <b id="titForm">Agregar app</b>
+    <input id="nombre" placeholder="Nombre de la app (texto del botón)">
+    <input id="url" type="url" placeholder="Enlace al presionar el botón (https://...)">
+    <input id="file" type="file" accept="image/*">
+    <img id="prev" class="hidden" style="width:56px;height:56px;border-radius:12px;object-fit:cover;margin-top:6px">
+    <div class="row"><button id="guardar">Guardar</button><button id="cancelar" class="sec hidden">Cancelar</button></div>
+  </div>
+  <div class="card"><b>Apps (<span id="n">0</span>)</b><div id="lista"></div></div>
+  <button id="salir" class="sec" style="width:100%">Cerrar sesión</button>
+</div>
+
+<script src="/firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const CLOUD = "dkryox5u", PRESET = "KendyR";
+const $ = id => document.getElementById(id);
+const msg = t => $("msg").textContent = t || "";
+firebase.initializeApp(window.FIREBASE_CONFIG);
+const auth = firebase.auth(), db = firebase.database();
+let editId = null, iconoActual = "", apps = [];
+
+auth.onAuthStateChanged(u => {
+  $("login").classList.toggle("hidden", !!u);
+  $("panel").classList.toggle("hidden", !u);
+  if (u) db.ref("apps").on("value", snap => {
+    apps = []; snap.forEach(c => apps.push({id: c.key, ...c.val()}));
+    apps.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    pintar();
+  });
+});
+$("entrar").onclick = async () => {
+  msg("Entrando...");
+  try { await auth.signInWithEmailAndPassword($("em").value.trim(), $("pw").value); msg(""); }
+  catch (e) { msg("Correo o contraseña incorrectos."); }
+};
+$("salir").onclick = () => auth.signOut();
+
+function pintar() {
+  $("n").textContent = apps.length;
+  $("lista").innerHTML = "";
+  apps.forEach(a => {
+    const d = document.createElement("div"); d.className = "item";
+    d.innerHTML = '<img src="' + (a.icono || "") + '" alt=""><div><b></b><small></small></div>';
+    d.querySelector("b").textContent = a.nombre; d.querySelector("small").textContent = a.url;
+    const e = document.createElement("button"); e.className = "sec"; e.textContent = "Editar"; e.onclick = () => editar(a);
+    const x = document.createElement("button"); x.className = "del"; x.textContent = "Borrar";
+    x.onclick = () => { if (confirm("¿Borrar " + a.nombre + "?")) db.ref("apps/" + a.id).remove(); };
+    d.append(e, x); $("lista").appendChild(d);
+  });
+}
+function editar(a) {
+  editId = a.id; iconoActual = a.icono || "";
+  $("nombre").value = a.nombre; $("url").value = a.url;
+  $("titForm").textContent = "Editar app"; $("cancelar").classList.remove("hidden");
+  $("prev").src = iconoActual; $("prev").classList.toggle("hidden", !iconoActual);
+  scrollTo({top: 0, behavior: "smooth"});
+}
+function limpiar() {
+  editId = null; iconoActual = ""; $("nombre").value = $("url").value = $("file").value = "";
+  $("prev").classList.add("hidden"); $("titForm").textContent = "Agregar app"; $("cancelar").classList.add("hidden");
+}
+$("cancelar").onclick = limpiar;
+
+async function subir(f) {
+  const fd = new FormData(); fd.append("file", f); fd.append("upload_preset", PRESET);
+  const r = await fetch("https://api.cloudinary.com/v1_1/" + CLOUD + "/image/upload", {method: "POST", body: fd});
+  const j = await r.json();
+  if (!j.secure_url) throw new Error(j.error && j.error.message || "Error al subir");
+  return j.secure_url;
+}
+$("guardar").onclick = async () => {
+  const nombre = $("nombre").value.trim(), url = $("url").value.trim();
+  if (!nombre || !url) { msg("Falta el nombre o el enlace."); return; }
+  $("guardar").disabled = true; msg("Guardando...");
+  try {
+    let icono = iconoActual;
+    const f = $("file").files[0];
+    if (f) icono = await subir(f);
+    if (editId) await db.ref("apps/" + editId).update({nombre, url, icono});
+    else await db.ref("apps").push({nombre, url, icono, orden: Date.now()});
+    limpiar(); msg("");
+  } catch (e) { msg("Error: " + e.message); }
+  $("guardar").disabled = false;
+};
+</script></body></html>
+  
