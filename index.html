@@ -48,7 +48,7 @@
 
   /* Pantalla de pasos: cada elemento es su propio cuadro */
   section{position:relative;z-index:2;padding:76px 18px 120px;max-width:520px;margin:auto}
-  #gate{display:flex;flex-direction:column;gap:30px}
+  #gate{display:flex;flex-direction:column;gap:18px}
 
   /* Cuadros de anuncio */
   .ad{position:relative;display:block;height:120px;border-radius:20px;overflow:hidden;
@@ -83,8 +83,23 @@
          box-shadow:0 20px 50px #000a;backdrop-filter:blur(8px)}
   h2{margin:0 0 14px;color:var(--txt);font-weight:800;letter-spacing:.3px}
   p{color:#a9a9bd;line-height:1.5}
-  #grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}
-  #grid button{font-size:14px;padding:16px 8px}
+  #grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  #grid button{font-size:17px;padding:20px 18px;display:flex;justify-content:space-between;align-items:center;text-align:left;
+               background:linear-gradient(135deg,#ff7a18,#e5233c);box-shadow:0 10px 30px #ff5a1855,inset 0 1px 0 #ffffff40}
+  .card{background:#0e0e15ee;border:1px solid var(--line);border-radius:22px;padding:18px;text-align:left;box-shadow:0 14px 36px #000a}
+  .card b{color:#ffb347;font-size:15px}.card p{margin:8px 0 0;font-size:14px}
+  .card ul,.card ol{margin:10px 0 0;padding-left:20px;color:#b9b9cc;font-size:14px;line-height:1.7}
+  .hero{text-align:center;background:radial-gradient(120% 100% at 50% 0%,#3a1408,#0e0e15 70%);border-color:#ff7a1855}
+  .hero .big{font-size:56px;animation:lat 1.8s ease-in-out infinite}
+  @keyframes lat{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+  .hero h2{margin:6px 0;background:linear-gradient(90deg,#ffb347,#ff4b4b);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .himg{width:100%;max-height:170px;object-fit:cover;border-radius:16px;margin-bottom:10px}
+  .bar{display:flex;gap:6px;margin-top:14px}.bar i{flex:1;height:7px;border-radius:5px;background:#1d1d29}
+  .bar i.ok{background:#ff7a18}.bar i.now{background:linear-gradient(90deg,#ff7a18,#ff4b4b);box-shadow:0 0 12px #ff7a18}
+  .tick{overflow:hidden;white-space:nowrap;margin-top:12px;font-size:13px;color:#ffb347}
+  .tick span{display:inline-block;padding-left:100%;animation:marq 16s linear infinite}
+  @keyframes marq{to{transform:translateX(-100%)}}
+  .ad{border-color:#ff7a1866;color:#ffd9b0;font-weight:700;font-size:16px}
 
   .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
            background:#000000e6;padding:18px}
@@ -146,15 +161,32 @@
 </div>
 
 <section id="gate" class="hidden">
+  <div id="head" class="card hero"></div>
   <a id="yt" class="ytbtn hidden" href="#" target="_blank" rel="noopener">Ir a seguirme en YouTube</a>
   <button id="btn" disabled></button>
   <div id="ads1" class="slot"></div>
+  <div id="info" class="card"></div>
+  <div id="extra" class="card"></div>
 </section>
 
 <section id="apps" class="hidden">
+  <div class="card hero">
+    <div class="big">👑</div>
+    <h2>¡Booyah! Lo lograste</h2>
+    <p>Completaste las 6 partes. Elige tu app y toca el botón para descargarla.</p>
+    <div class="tick"><span>🔥 Gracias por apoyar el canal · 💎 Más apps muy pronto · 🎮 Únete a la comunidad para enterarte primero</span></div>
+  </div>
   <div class="panel">
-    <h2>Elige tu app</h2>
+    <h2>📲 Elige tu app</h2>
     <div id="grid"></div>
+  </div>
+  <div class="card" style="margin-top:18px"><b>📋 Cómo instalar</b>
+    <ol><li>Toca el botón de la app que quieres.</li><li>Espera a que empiece la descarga.</li><li>Abre el archivo y sigue los pasos de instalación.</li></ol>
+  </div>
+  <div class="card" style="margin-top:18px"><b>🔥 Síguenos</b>
+    <p>Novedades y nuevas apps primero en nuestros canales.</p>
+    <a id="lnkYt" class="ytbtn" style="margin-top:12px;text-align:center" href="#" target="_blank" rel="noopener">▶ Canal de YouTube</a>
+    <a id="lnkWa" class="ytbtn" style="margin-top:10px;text-align:center;background:linear-gradient(135deg,#2ee57a,#10a64a);box-shadow:0 10px 30px #12c15a55" href="#" target="_blank" rel="noopener">💬 Canal de WhatsApp</a>
   </div>
 </section>
 
@@ -326,7 +358,7 @@ yt.href = YT_URL;
   a.className = "ad";
   a.setAttribute("role", "button");
   a.setAttribute("aria-label", "Anuncio");
-  a.textContent = "Anuncio · toca aquí";
+  a.textContent = "👆 Toca aquí · Anuncio";
   a.addEventListener("click", () => {
     permitirSalida();
     ultimoAd = Date.now();
@@ -342,6 +374,43 @@ yt.addEventListener("click", () => {
   if (!ytHecho) { pendYt = true; guardar(); }
 });
 
+// ---------- DECORACIÓN POR PASO ----------
+const IMAGENES_FF = [];   // opcional: enlaces (https://...) de imágenes tuyas, una por paso o se repiten
+const PASOS = [
+  {e:"🔥",t:"Prepárate para la partida",d:"Estás a 6 partes de tus apps. Sigue el orden y no cierres la web.",
+   tips:["Toca el cuadro para abrir el anuncio","Vuelve a la web y espera 5 segundos","Presiona el botón y espera la cuenta"],x:["🎯 Misión","Completa las 6 partes para desbloquear la lista de apps."]},
+  {e:"🪂",t:"Salta al mapa",d:"Buen aterrizaje. Cada parte te acerca más a la zona final.",
+   tips:["Puedes tocar el anuncio las veces que quieras","No pasa nada si cambias de pestaña a ver el anuncio","Mantén la web abierta"],x:["🗺️ Zona segura","Ver anuncios no te reinicia, ¡tranquilo!"]},
+  {e:"💎",t:"Recoge tu botín",d:"Vas por la mitad. Sigue juntando partes como un verdadero jugador.",
+   tips:["Chaleco y casco primero","Cúrate antes de pelear","Lleva munición de sobra"],x:["💎 Botín","Ya llevas la mitad del camino, sigue así."]},
+  {e:"⚡",t:"Modo ataque",d:"Rápido y sin miedo. La cuenta regresiva es tu momento de respirar.",
+   tips:["Usa la cobertura siempre","Escucha los pasos cerca","Cambia de posición seguido"],x:["⏱️ Ojo","Si sales de la web por 15 segundos o más, se reinicia todo."]},
+  {e:"🏆",t:"Casi en la final",d:"Queda el último círculo. Un par de partes más y listo.",
+   tips:["No te confíes en la recta final","Revisa la zona antes de moverte","Paciencia: ya casi es tuyo"],x:["🏆 Último círculo","Falta muy poco, mantén la web abierta."]},
+  {e:"👑",t:"¡Última parte!",d:"Sigue mi canal de YouTube y desbloquea todas las apps.",
+   tips:["Toca el botón rojo para ir a YouTube","Regresa y espera 5 segundos","Después verás todas las apps"],x:["👑 Booyah","Al terminar esta parte se abre la lista de apps."]}
+];
+const LAYOUTS = [
+  {head:0,btn:1,ad:2,info:3,extra:4,yt:9},
+  {head:0,ad:1,btn:2,info:3,extra:4,yt:9},
+  {head:0,info:1,btn:2,extra:3,ad:4,yt:9},
+  {head:0,ad:1,info:2,btn:3,extra:4,yt:9},
+  {head:0,extra:1,ad:2,btn:3,info:4,yt:9},
+  {head:0,yt:1,btn:2,ad:3,info:4,extra:5}
+];
+function pintarDeco() {
+  const P = PASOS[paso - 1], L = LAYOUTS[paso - 1];
+  const img = IMAGENES_FF.length ? '<img class="himg" src="' + IMAGENES_FF[(paso - 1) % IMAGENES_FF.length] + '" alt="">' : "";
+  let barra = "";
+  for (let i = 1; i <= TOTAL; i++) barra += '<i class="' + (i < paso ? "ok" : i === paso ? "now" : "") + '"></i>';
+  $("head").innerHTML = img + '<div class="big">' + P.e + '</div><h2>' + P.t + '</h2><p>' + P.d + '</p><div class="bar">' + barra +
+    '</div><div class="tick"><span>🔥 Parte ' + paso + ' de ' + TOTAL + ' · 💎 Sigue adelante · 🎮 Únete a la comunidad de WhatsApp · 🏆 Ya casi</span></div>';
+  $("info").innerHTML = "<b>⚡ Consejos rápidos</b><ul>" + P.tips.map(t => "<li>" + t + "</li>").join("") + "</ul>";
+  $("extra").innerHTML = "<b>" + P.x[0] + "</b><p>" + P.x[1] + "</p>";
+  ["head", "info", "extra"].forEach(k => { $(k).style.order = L[k]; });
+  btn.style.order = L.btn; $("ads1").style.order = L.ad; yt.style.order = L.yt;
+}
+
 // ---------- PINTAR ----------
 function pintarMarcas() {
   document.querySelectorAll("#gate .slot .ad").forEach(a => a.classList.toggle("done", adHecho));
@@ -356,6 +425,9 @@ function pintarBtn() {
     btn.textContent = "Continuar";
   } else if (contando) {
     btn.disabled = true;               // el texto lo maneja la cuenta regresiva
+  } else if (timerEspera) {
+    btn.disabled = true;
+    btn.textContent = "Espera " + Math.max(1, Math.ceil((espFin - Date.now()) / 1000)) + "s...";
   } else if (listo) {
     btn.disabled = false;
     btn.textContent = "Continuar";
@@ -369,6 +441,7 @@ function pintarBtn() {
 
 function pintar() {
   $("contador").textContent = paso + "/" + TOTAL;
+  pintarDeco();
   pintarMarcas();
   pintarBtn();
 }
@@ -410,7 +483,7 @@ function mostrarWeb() {
 function restaurar() {
   const deAnuncio = salida && Date.now() - salida < 600000;   // la pestaña se recargó mientras veía un anuncio
   if (fin) {
-    if (salioApps || !deAnuncio) { reiniciar(); aviso(); }   // volvió de una descarga o cerró la web
+    if (!deAnuncio) { reiniciar(); aviso(); }   // volvió de una descarga o cerró la web
     else mostrarApps();
     return;
   }
@@ -515,15 +588,25 @@ function revisarListo() {
   espFin = Date.now() + ESPERA_OCULTA;
   timerEspera = setTimeout(finEspera, ESPERA_OCULTA);
   guardar();
+  pintarBtn();
 }
 // Por si el navegador congela el temporizador en segundo plano
-setInterval(revisarEspera, 400);
+setInterval(() => { revisarEspera(); if (timerEspera) pintarBtn(); }, 250);
 
-// Minimizar NO reinicia. Solo reinicia: ir a descargar una app y volver, o cerrar y reabrir la web
+// Reinicia solo si sales de la web 15 s o más (aunque dejes la pestaña abierta) o si la cierras y la reabres.
+// Ir a ver un anuncio, a YouTube o a WhatsApp no cuenta.
+const FUERA_MAX = 15000;
+let ocultoDesde = 0, exentoSalida = false;
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    exento = 0; salida = 0; guardar();
-    if (salioApps) { reiniciar(); aviso(); return; }
+  if (document.visibilityState === "hidden") {
+    const enApps = !$("apps").classList.contains("hidden");
+    ocultoDesde = Date.now();
+    exentoSalida = Date.now() < exento || (!enApps && Date.now() - ultimoToque < VENTANA_TOQUE);
+  } else {
+    const lejos = ocultoDesde && !exentoSalida && Date.now() - ocultoDesde >= FUERA_MAX;
+    const hubo = paso > 1 || fin || adHecho || ytHecho || listo || cuentaOk || contando || !!timerEspera;
+    ocultoDesde = 0; exento = 0; salida = 0; guardar();
+    if (lejos) { reiniciar(); if (hubo) aviso(); return; }
     verificar();
   }
 });
@@ -573,20 +656,14 @@ function pintarApps(lista) {
   lista.forEach(a => {
     if (!a.nombre || !a.url) return;
     const b = document.createElement("button");
-    if (a.icono) {
-      const im = document.createElement("img");
-      im.src = a.icono; im.alt = "";
-      im.style.cssText = "width:44px;height:44px;border-radius:12px;object-fit:cover;display:block;margin:0 auto 8px";
-      b.appendChild(im);
-    }
-    b.appendChild(document.createTextNode(a.nombre));
-    b.onclick = () => {
-      salioApps = true; guardar();      // al volver de la descarga se reinicia todo
-      window.open(a.url, "_blank");
-    };
+    const n = document.createElement("span"); n.textContent = "📲  " + a.nombre;
+    const f = document.createElement("span"); f.textContent = "⬇";
+    b.append(n, f);
+    b.onclick = () => window.open(a.url, "_blank");
     g.appendChild(b);
   });
 }
+$("lnkYt").href = YT_URL; $("lnkWa").href = WA_URL;
 
 pintar();
 </script>
