@@ -126,7 +126,7 @@
 </div>
 
 <!-- Aviso de reinicio -->
-<div id="toast" class="hidden">Reinicio por minimizar o salir</div>
+<div id="toast" class="hidden">Reinicio por salir de la web</div>
 
 <!-- Verificación al entrar -->
 <div id="verif" class="overlay">
@@ -164,6 +164,7 @@
   <span class="lbl">Únete</span>
 </a>
 
+<script src="/firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
@@ -172,7 +173,6 @@
 // Monetag: en cada zona pega el dominio que aparece en "Get tag" (https://DOMINIO/tag.min.js)
 const ZONAS = {
   ventana:  { zone: "12014639", src: "https://al5sm.com/tag.min.js" },  // OnClick (Popunder) -> anuncio por ventana
-  inpage:   { zone: "12014927", src: "https://nap5k.com/tag.min.js" },  // In-Page Push      -> automático
   vignette: { zone: "12014841", src: "https://n6wxm.com/vignette.min.js" }   // Vignette Banner   -> automático
 };
 // Opcional: enlace directo de Monetag para cada cuadro (si lo dejas vacío, el cuadro dispara la ventana del popunder)
@@ -189,13 +189,7 @@ const TOTAL = 6, SEGUNDOS = 15, ESPERA_OCULTA = 5000;
 const VENTANA_SALIDA = 8000;           // salir a un anuncio/YouTube/WhatsApp no cuenta como reinicio
 const VIGENCIA = 30 * 60 * 1000;       // la verificación dura 30 min
 
-const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
-  projectId: "TU_PROYECTO",
-  appId: "TU_APP_ID"
-};
+const firebaseConfig = window.FIREBASE_CONFIG || {};
 
 const $ = id => document.getElementById(id);
 
@@ -254,6 +248,9 @@ setInterval(() => { if (!bloqueado) revisarBloqueo(); }, 10000);
 
 // ---------- FIREBASE ----------
 function iniciarFirebase() {
+  if (!firebaseConfig.databaseURL || firebaseConfig.databaseURL.includes("TU_PROYECTO")) {
+    console.warn("Falta configurar firebase-config.js"); return;
+  }
   try {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -270,6 +267,12 @@ function iniciarFirebase() {
     });
     db.ref("online").on("value", snap => {
       $("nOnline").textContent = snap.numChildren();
+    });
+    db.ref("apps").on("value", snap => {
+      const l = [];
+      snap.forEach(c => { l.push(c.val()); });
+      l.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+      pintarApps(l);
     });
   } catch (e) { console.error("Firebase:", e); }
 }
@@ -516,39 +519,11 @@ function revisarListo() {
 // Por si el navegador congela el temporizador en segundo plano
 setInterval(revisarEspera, 400);
 
-// Salir o minimizar
+// Minimizar NO reinicia. Solo reinicia: ir a descargar una app y volver, o cerrar y reabrir la web
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") {
-    // Salir a YouTube o WhatsApp está permitido
-    const enApps = !$("apps").classList.contains("hidden");
-    if (Date.now() < exento) {
-      if (!enApps && !adHecho && Date.now() - ultimoAd < VENTANA_SALIDA) pendAd = true;
-      guardar();
-      return;
-    }
-    // Un toque en la página justo antes de ocultarse = se abrió un anuncio (aunque toques 2 veces), no es minimizar
-    if (!enApps && Date.now() - ultimoToque < VENTANA_TOQUE) {
-      if (!adHecho && Date.now() - ultimoAd < VENTANA_SALIDA) pendAd = true;
-      guardar();
-      return;
-    }
-    if (!enApps) {
-      const tuvo = paso > 1 || adHecho || ytHecho || listo || cuentaOk || contando || !!timerEspera;
-      reiniciar();
-      if (tuvo) avisoPendiente = true;
-    } else {
-      // En las apps: si sale (ej. a descargar), al volver reinicia desde cero
-      salioApps = true;
-      guardar();
-    }
-  } else {
+  if (document.visibilityState === "visible") {
     exento = 0; salida = 0; guardar();
-    if (salioApps) {
-      reiniciar();
-      aviso();
-      return;
-    }
-    if (avisoPendiente) { avisoPendiente = false; aviso(); }
+    if (salioApps) { reiniciar(); aviso(); return; }
     verificar();
   }
 });
@@ -591,14 +566,27 @@ function siguiente() {
   pintar();
 }
 
-// ---------- APPS (vacío por ahora) ----------
-const APPS = []; // ejemplo: [{nombre:"Mi App", url:"https://..."}]
-APPS.forEach(a => {
-  const b = document.createElement("button");
-  b.textContent = a.nombre;
-  b.onclick = () => window.open(a.url, "_blank");
-  $("grid").appendChild(b);
-});
+// ---------- APPS (se editan en /edit) ----------
+function pintarApps(lista) {
+  const g = $("grid");
+  g.innerHTML = "";
+  lista.forEach(a => {
+    if (!a.nombre || !a.url) return;
+    const b = document.createElement("button");
+    if (a.icono) {
+      const im = document.createElement("img");
+      im.src = a.icono; im.alt = "";
+      im.style.cssText = "width:44px;height:44px;border-radius:12px;object-fit:cover;display:block;margin:0 auto 8px";
+      b.appendChild(im);
+    }
+    b.appendChild(document.createTextNode(a.nombre));
+    b.onclick = () => {
+      salioApps = true; guardar();      // al volver de la descarga se reinicia todo
+      window.open(a.url, "_blank");
+    };
+    g.appendChild(b);
+  });
+}
 
 pintar();
 </script>
