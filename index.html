@@ -146,10 +146,9 @@
 </div>
 
 <section id="gate" class="hidden">
-  <div id="ads1" class="slot"></div>
   <a id="yt" class="ytbtn hidden" href="#" target="_blank" rel="noopener">Ir a seguirme en YouTube</a>
   <button id="btn" disabled></button>
-  <div id="ads2" class="slot"></div>
+  <div id="ads1" class="slot"></div>
 </section>
 
 <section id="apps" class="hidden">
@@ -319,7 +318,7 @@ document.querySelectorAll(".wa").forEach(a => {
 yt.href = YT_URL;
 
 // ---------- ANUNCIOS (se puede tocar cualquiera, las veces que quieras) ----------
-[0, 1].forEach(i => {
+[0].forEach(i => {
   const a = document.createElement("div");
   a.className = "ad";
   a.setAttribute("role", "button");
@@ -332,7 +331,7 @@ yt.href = YT_URL;
     if (ENLACES_CUADROS[i]) window.open(ENLACES_CUADROS[i], "_blank");
     // si no hay enlace, el popunder de Monetag abre la ventana con este mismo toque
   });
-  $(i === 0 ? "ads1" : "ads2").appendChild(a);
+  $("ads1").appendChild(a);
 });
 
 yt.addEventListener("click", () => {
@@ -360,8 +359,8 @@ function pintarBtn() {
   } else {
     btn.disabled = true;
     btn.textContent = requiereYT()
-      ? "Toca el anuncio y sigue en YouTube"
-      : "Toca un anuncio y espera 5 segundos";
+      ? "Toca el cuadro de abajo y sigue en YouTube"
+      : "Toca el cuadro de abajo para continuar";
   }
 }
 
@@ -406,21 +405,21 @@ function mostrarWeb() {
 }
 
 function restaurar() {
+  const deAnuncio = salida && Date.now() - salida < 600000;   // la pestaña se recargó mientras veía un anuncio
   if (fin) {
-    if (salioApps) { reiniciar(); aviso(); }   // volvió de una descarga: empieza de cero
+    if (salioApps || !deAnuncio) { reiniciar(); aviso(); }   // volvió de una descarga o cerró la web
     else mostrarApps();
     return;
   }
-  // Si se recargó o salió en plena espera, se reinicia
-  if (contando || S.espera) {
-    // Si la pestaña se recargó justo tras abrir un anuncio, se conserva la espera
-    if (S.espera && !contando && salida && Date.now() - salida < 600000) {
+  const progreso = paso > 1 || adHecho || ytHecho || pendAd || pendYt || listo || cuentaOk || contando || S.espera;
+  if (progreso) {
+    if (!deAnuncio) { reiniciar(); aviso(); return; }       // cerró / salió de la web
+    if (contando) { contando = false; cuentaOk = true; guardar(); }
+    else if (S.espera) {
       espFin = S.espFin || 0;
       if (Date.now() >= espFin) finEspera();
       else timerEspera = setTimeout(finEspera, espFin - Date.now());
-      pintar(); verificar(); return;
     }
-    reiniciar(); aviso(); return;
   }
   pintar();
   verificar();
@@ -533,16 +532,17 @@ document.addEventListener("visibilitychange", () => {
       guardar();
       return;
     }
-    if (!enApps && (contando || timerEspera)) {
+    if (!enApps) {
+      const tuvo = paso > 1 || adHecho || ytHecho || listo || cuentaOk || contando || !!timerEspera;
       reiniciar();
-      avisoPendiente = true;
-    } else if (enApps) {
+      if (tuvo) avisoPendiente = true;
+    } else {
       // En las apps: si sale (ej. a descargar), al volver reinicia desde cero
       salioApps = true;
       guardar();
     }
   } else {
-    exento = 0;
+    exento = 0; salida = 0; guardar();
     if (salioApps) {
       reiniciar();
       aviso();
