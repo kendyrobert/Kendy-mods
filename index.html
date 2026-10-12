@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Descargas</title>
+
+<!-- Anuncios automáticos (pon tu ID de editor) -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
+<!-- Verificación humana: Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<style>
+  :root{
+    --bg:#050507;
+    --card:#0e0e15;
+    --line:#ffffff14;
+    --txt:#ececf4;
+    --mute:#7d7d92;
+    --a1:#7c5cff;
+    --a2:#2d8bff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg)}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--txt);text-align:center;min-height:100vh;overflow-x:hidden}
+
+  /* Fondo negro con brillos suaves */
+  #bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+      background:radial-gradient(120% 80% at 50% 0%,#0d0d16 0%,#050507 60%)}
+  #bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.28}
+  #bg i:nth-child(1){width:320px;height:320px;background:#6d4aff;top:-90px;left:-110px;animation:flota 14s ease-in-out infinite}
+  #bg i:nth-child(2){width:300px;height:300px;background:#1f7bff;bottom:-110px;right:-100px;animation:flota 17s ease-in-out infinite reverse}
+  @keyframes flota{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
+
+  /* Barra superior */
+  #top{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;
+       align-items:center;padding:14px 18px;font-size:14px;color:var(--mute);letter-spacing:.4px;
+       background:linear-gradient(#050507ee,#05050700)}
+  #contador{color:var(--txt);font-weight:700;letter-spacing:1px}
+  #top b{color:var(--txt);font-weight:700}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3ddc84;
+       margin-right:7px;box-shadow:0 0 10px #3ddc84}
+
+  .hidden{display:none!important}
+
+  /* Pantalla de pasos: cada elemento es su propio cuadro */
+  section{position:relative;z-index:2;padding:76px 18px 120px;max-width:520px;margin:auto}
+  #gate{display:flex;flex-direction:column;gap:30px}
+
+  /* Cuadros de anuncio */
+  .ad{position:relative;display:block;height:120px;border-radius:20px;overflow:hidden;
+      background:linear-gradient(145deg,#14141d,#0b0b11);
+      border:1px solid var(--line);box-shadow:0 12px 32px #0009,inset 0 1px 0 #ffffff0d;
+      transition:transform .2s,border-color .3s,box-shadow .3s}
+  .ad::after{content:"";position:absolute;inset:0;
+      background:linear-gradient(110deg,transparent 35%,#ffffff0a 50%,transparent 65%);
+      transform:translateX(-100%);animation:brillo 3.6s ease-in-out infinite}
+  @keyframes brillo{0%{transform:translateX(-100%)}60%,100%{transform:translateX(100%)}}
+  .ad:active{transform:scale(.98)}
+  .ad.done{border-color:#7c5cff88;box-shadow:0 0 28px #7c5cff33,0 12px 32px #0009,inset 0 1px 0 #ffffff0d}
+
+  /* Botones */
+  button,.ytbtn{display:block;width:100%;padding:18px 16px;font-size:16px;font-weight:700;
+         letter-spacing:.4px;border:0;border-radius:18px;color:#fff;font-family:inherit;
+         text-decoration:none;cursor:pointer;
+         background:linear-gradient(135deg,var(--a1),var(--a2));
+         box-shadow:0 10px 30px #5a5cff55,inset 0 1px 0 #ffffff40;
+         transition:transform .15s,box-shadow .3s,filter .2s}
+  button:active,.ytbtn:active{transform:scale(.97)}
+  button:disabled{background:#12121a;color:#6d6d82;box-shadow:none;border:1px solid var(--line);
+                  cursor:default}
+  .ytbtn{background:linear-gradient(135deg,#ff4b4b,#c80f2e);
+         box-shadow:0 10px 30px #e5233c55,inset 0 1px 0 #ffffff40}
+  .ytbtn.done{background:#12121a;color:#8a8aa0;box-shadow:none;border:1px solid #7c5cff66}
+
+  .panel{background:#0e0e15ee;border:1px solid var(--line);border-radius:24px;padding:24px;
+         box-shadow:0 20px 50px #000a;backdrop-filter:blur(8px)}
+  h2{margin:0 0 14px;color:var(--txt);font-weight:800;letter-spacing:.3px}
+  p{color:#a9a9bd;line-height:1.5}
+  #grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}
+  #grid button{font-size:14px;padding:16px 8px}
+
+  .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+           background:#000000e6;padding:18px}
+  .overlay .panel{max-width:360px;width:100%}
+  #verif{z-index:20}
+  #bloqueo{z-index:30}
+  #bloqueo .panel{border-color:#ff4b4b55}
+  #bloqueoMsg{color:#ff9a9a;min-height:20px;font-size:14px}
+  #toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:40;
+         background:#1a0a0d;color:#ffd0d6;border:1px solid #ff4b4b88;border-radius:16px;
+         padding:18px 24px;font-weight:700;box-shadow:0 0 40px #ff4b4b44;max-width:85%}
+
+  /* Botón redondo de la comunidad (esquina inferior derecha) */
+  .fab{position:fixed;right:18px;bottom:22px;z-index:10;width:68px;height:68px;border-radius:50%;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;
+       text-decoration:none;color:#fff;
+       background:linear-gradient(135deg,#2ee57a,#10a64a);
+       box-shadow:0 8px 28px #12c15a66,inset 0 1px 0 #ffffff55;animation:pulso 2s infinite}
+  .fab svg{width:30px;height:30px;fill:#fff}
+  .fab .lbl{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-top:1px}
+  .fab:active{transform:scale(.92)}
+  @keyframes pulso{0%{box-shadow:0 8px 28px #12c15a66,0 0 0 0 #2ee57a88}
+                   70%{box-shadow:0 8px 28px #12c15a66,0 0 0 18px #2ee57a00}
+                   100%{box-shadow:0 8px 28px #12c15a66,0 0 0 0 #2ee57a00}}
+</style>
+</head>
+<body>
+
+<div id="bg"><i></i><i></i></div>
+
+<!-- Aviso de bloqueador de anuncios -->
+<div id="bloqueo" class="overlay hidden">
+  <div class="panel">
+    <h2>Bloqueador detectado</h2>
+    <p>Desactiva tu bloqueador de anuncios o el DNS que bloquea anuncios para usar la web.</p>
+    <p id="bloqueoMsg"></p>
+    <button id="reintentar">Reintentar</button>
+  </div>
+</div>
+
+
+<!-- Verificación al entrar -->
+<div id="verif" class="overlay">
+  <div class="panel">
+    <h2>Verificando</h2>
+    <p>Confirma que eres humano para continuar</p>
+    <div class="cf-turnstile"
+         data-sitekey="1x00000000000000000000AA"
+         data-callback="humanoOk"
+         data-theme="dark"></div>
+  </div>
+</div>
+
+<div id="top" class="hidden">
+  <span id="contador">1/6</span>
+  <span><span class="dot"></span><b id="nOnline">0</b> en línea</span>
+</div>
+
+<section id="gate" class="hidden">
+  <div id="ads1" class="slot"></div>
+  <a id="yt" class="ytbtn hidden" href="#" target="_blank" rel="noopener">Ir a seguirme en YouTube</a>
+  <button id="btn" disabled></button>
+  <div id="ads2" class="slot"></div>
+</section>
+
+<section id="apps" class="hidden">
+  <div class="panel">
+    <h2>Elige tu app</h2>
+    <div id="grid"></div>
+  </div>
+</section>
+
+<!-- Botón redondo flotante: comunidad de WhatsApp -->
+<a id="fab" class="wa fab hidden" href="#" target="_blank" rel="noopener" aria-label="Únete a la comunidad">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  <span class="lbl">Únete</span>
+</a>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+// ---------- CONFIG ----------
+// Puedes tocar cualquiera de estos anuncios, las veces que quieras
+const ADS = [
+  "https://example.com/tu-anuncio-1",   // va arriba del botón
+  "https://example.com/tu-anuncio-2"    // va más abajo, separado
+];
+const YT_URL = "https://www.youtube.com/@TU_CANAL";
+const WA_URL = "https://whatsapp.com/channel/TU_CANAL";
+
+const TOTAL = 6, SEGUNDOS = 15, ESPERA_OCULTA = 5000;
+const VENTANA_SALIDA = 8000;           // salir a un anuncio/YouTube/WhatsApp no cuenta como reinicio
+const VIGENCIA = 30 * 60 * 1000;       // la verificación dura 30 min
+
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
+  projectId: "TU_PROYECTO",
+  appId: "TU_APP_ID"
+};
+
+const $ = id => document.getElementById(id);
+
+// ---------- DETECTOR DE BLOQUEADOR ----------
+async function hayBloqueador() {
+  // 1) Señuelo que los bloqueadores suelen ocultar
+  const b = document.createElement("div");
+  b.className = "adsbox ad-banner pub_300x250 text-ad";
+  b.style.cssText = "position:absolute;left:-999px;top:0;width:10px;height:10px";
+  b.innerHTML = "&nbsp;";
+  document.body.appendChild(b);
+  await new Promise(r => setTimeout(r, 120));
+  const cs = getComputedStyle(b);
+  const oculto = b.offsetHeight === 0 || cs.display === "none" || cs.visibility === "hidden";
+  b.remove();
+  if (oculto) return true;
+
+  // 2) Prueba de red (detecta DNS y bloqueadores de red)
+  try {
+    await fetch("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?t=" + Date.now(),
+                {mode: "no-cors", cache: "no-store"});
+  } catch (e) {
+    return navigator.onLine; // si no hay internet, no lo cuenta como bloqueador
+  }
+  return false;
+}
+
+let bloqueado = false;
+async function revisarBloqueo(manual) {
+  const hay = await hayBloqueador();
+  bloqueado = hay;
+  $("bloqueo").classList.toggle("hidden", !hay);
+  if (manual) $("bloqueoMsg").textContent = hay ? "Aún detectamos el bloqueador. Desactívalo e intenta otra vez." : "";
+  return hay;
+}
+$("reintentar").addEventListener("click", async () => {
+  $("reintentar").disabled = true;
+  $("bloqueoMsg").textContent = "Comprobando...";
+  await revisarBloqueo(true);
+  $("reintentar").disabled = false;
+});
+revisarBloqueo();
+setInterval(() => { if (!bloqueado) revisarBloqueo(); }, 10000);
+
+// ---------- FIREBASE ----------
+function iniciarFirebase() {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    if (!sessionStorage.getItem("contado")) {
+      sessionStorage.setItem("contado", "1");
+      const dia = new Date().toISOString().slice(0, 10);
+      db.ref("visitas/" + dia).transaction(v => (v || 0) + 1);
+    }
+    db.ref(".info/connected").on("value", snap => {
+      if (snap.val() === true) {
+        const yo = db.ref("online").push(true);
+        yo.onDisconnect().remove();
+      }
+    });
+    db.ref("online").on("value", snap => {
+      $("nOnline").textContent = snap.numChildren();
+    });
+  } catch (e) { console.error("Firebase:", e); }
+}
+
+// ---------- ESTADO ----------
+let S = {};
+try { S = JSON.parse(localStorage.getItem("estado")) || {}; } catch (e) {}
+
+let verif    = S.verif || 0;
+let fin      = !!S.fin;          // llegó a las apps
+let paso     = S.paso || 1;
+let adHecho  = !!S.adHecho;      // tocó un anuncio y regresó
+let ytHecho  = !!S.ytHecho;      // fue a YouTube y regresó (solo paso 6)
+let pendAd   = !!S.pendAd;       // salió a un anuncio, falta que regrese
+let pendYt   = !!S.pendYt;       // salió a YouTube, falta que regrese
+let listo    = !!S.listo;        // pasó la espera de 5 s: botón habilitado
+let cuentaOk = !!S.cuentaOk;     // terminó los 15 s: botón para pasar a la siguiente parte
+let contando = !!S.contando;
+let timerCuenta = null, timerEspera = null, espFin = 0, finCuentaGuardada = 0;
+let exento = 0;                  // hasta cuándo salir NO cuenta como reinicio
+
+function guardar() {
+  try {
+    localStorage.setItem("estado", JSON.stringify({
+      verif, fin, paso, adHecho, ytHecho, pendAd, pendYt, listo, cuentaOk,
+      contando, espera: !!timerEspera, salioApps
+    }));
+  } catch (e) {}
+}
+
+const btn = $("btn"), yt = $("yt");
+const requiereYT = () => paso === TOTAL;
+
+// Salidas permitidas (anuncio, YouTube, WhatsApp): no reinician
+function permitirSalida() { exento = Date.now() + VENTANA_SALIDA; }
+
+// ---------- ENLACES ----------
+document.querySelectorAll(".wa").forEach(a => {
+  a.href = WA_URL;
+  a.addEventListener("click", permitirSalida);
+});
+yt.href = YT_URL;
+
+// ---------- ANUNCIOS (se puede tocar cualquiera, las veces que quieras) ----------
+ADS.forEach((url, i) => {
+  const a = document.createElement("a");
+  a.className = "ad";
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.setAttribute("aria-label", "Anuncio");
+  a.addEventListener("click", () => {
+    permitirSalida();
+    if (!adHecho) { pendAd = true; guardar(); }
+  });
+  $(i === 0 ? "ads1" : "ads2").appendChild(a);
+});
+
+yt.addEventListener("click", () => {
+  permitirSalida();
+  if (!ytHecho) { pendYt = true; guardar(); }
+});
+
+// ---------- PINTAR ----------
+function pintarMarcas() {
+  document.querySelectorAll("#gate .slot .ad").forEach(a => a.classList.toggle("done", adHecho));
+  yt.classList.toggle("hidden", !requiereYT());
+  yt.classList.toggle("done", ytHecho);
+  yt.textContent = ytHecho ? "YouTube verificado" : "Ir a seguirme en YouTube";
+}
+
+function pintarBtn() {
+  if (cuentaOk) {
+    btn.disabled = false;
+    btn.textContent = "Continuar";
+  } else if (contando) {
+    btn.disabled = true;               // el texto lo maneja la cuenta regresiva
+  } else if (listo) {
+    btn.disabled = false;
+    btn.textContent = "Continuar";
+  } else {
+    btn.disabled = true;
+    btn.textContent = requiereYT()
+      ? "Toca el anuncio y sigue en YouTube"
+      : "Toca un anuncio y espera 5 segundos";
+  }
+}
+
+function pintar() {
+  $("contador").textContent = paso + "/" + TOTAL;
+  pintarMarcas();
+  pintarBtn();
+}
+
+function reiniciar() {
+  clearInterval(timerCuenta); timerCuenta = null;
+  clearTimeout(timerEspera); timerEspera = null;
+  contando = false; paso = 1; fin = false;
+  adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = false;
+  guardar();
+  $("apps").classList.add("hidden");
+  $("gate").classList.remove("hidden");
+  pintar();
+}
+
+function mostrarApps() {
+  $("gate").classList.add("hidden");
+  $("apps").classList.remove("hidden");
+  $("contador").textContent = "";
+}
+
+function mostrarWeb() {
+  const v = $("verif");
+  if (v) v.remove();
+  $("top").classList.remove("hidden");
+  $("gate").classList.remove("hidden");
+  $("fab").classList.remove("hidden");
+  iniciarFirebase();
+}
+
+function restaurar() {
+  if (fin) {
+    mostrarApps();
+    return;
+  }
+  // Al volver de segundo plano, conserva el progreso.
+  if (contando && finCuentaGuardada && Date.now() >= finCuentaGuardada) {
+    contando = false;
+    cuentaOk = true;
+    finCuentaGuardada = 0;
+    guardar();
+  }
+  if (S.espera && !listo) {
+    // La espera se vuelve a comprobar al regresar, sin reiniciar el progreso.
+    timerEspera = null;
+  }
+  pintar();
+  verificar();
+}
+
+// ---------- VERIFICACIÓN HUMANA ----------
+window.humanoOk = function (token) {
+  // Idealmente envía "token" a tu servidor para validarlo
+  verif = Date.now();
+  paso = 1; fin = false;
+  adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = contando = false;
+  guardar();
+  mostrarWeb();
+  pintar();
+};
+
+if (verif && Date.now() - verif < VIGENCIA) {
+  mostrarWeb();
+  restaurar();
+}
+
+// ---------- FLUJO ----------
+// Al regresar de un anuncio / YouTube se marcan como hechos
+function verificar() {
+  if (document.visibilityState !== "visible") return;
+  revisarEspera();
+  if (!pendAd && !pendYt) return;
+  if (pendAd) { adHecho = true; pendAd = false; }
+  if (pendYt) { ytHecho = true; pendYt = false; }
+  guardar();
+  pintarMarcas();
+  revisarListo();
+}
+
+// Cuando todo lo requerido está hecho, espera 5 s y habilita el botón
+function finEspera() {
+  clearTimeout(timerEspera); timerEspera = null;
+  listo = true;
+  guardar();
+  pintarBtn();
+}
+function revisarEspera() {
+  if (timerEspera && Date.now() >= espFin) finEspera();
+}
+function revisarListo() {
+  if (listo || timerEspera || contando || cuentaOk) return;
+  if (!adHecho) return;
+  if (requiereYT() && !ytHecho) return;
+  espFin = Date.now() + ESPERA_OCULTA;
+  timerEspera = setTimeout(finEspera, ESPERA_OCULTA);
+  guardar();
+}
+// Por si el navegador congela el temporizador en segundo plano
+setInterval(revisarEspera, 400);
+
+// Minimizar o cambiar de app no reinicia el progreso.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    verificar();
+    revisarEspera();
+  }
+});
+addEventListener("focus", verificar);
+
+btn.addEventListener("click", () => {
+  // 2º paso: terminó la cuenta regresiva, pasa a la siguiente parte
+  if (cuentaOk) { siguiente(); return; }
+  if (!listo || contando) return;
+
+  // 1º paso: inicia la cuenta regresiva de 15 s
+  contando = true;
+  guardar();
+  btn.disabled = true;
+  const finCuenta = Date.now() + SEGUNDOS * 1000;
+  finCuentaGuardada = finCuenta;
+  guardar();
+  const tick = () => {
+    const t = Math.ceil((finCuenta - Date.now()) / 1000);
+    if (t > 0) { btn.textContent = `Espera ${t}s...`; return; }
+    clearInterval(timerCuenta); timerCuenta = null;
+    contando = false;
+    cuentaOk = true;
+    finCuentaGuardada = 0;
+    guardar();
+    pintarBtn();      // aparece el botón "Continuar"
+  };
+  tick();
+  timerCuenta = setInterval(tick, 250);
+});
+
+function siguiente() {
+  if (paso >= TOTAL) {
+    fin = true;
+    guardar();
+    mostrarApps();
+    return;
+  }
+  paso++;
+  adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = false;
+  guardar();
+  pintar();
+}
+
+// ---------- APPS (vacío por ahora) ----------
+const APPS = []; // ejemplo: [{nombre:"Mi App", url:"https://..."}]
+APPS.forEach(a => {
+  const b = document.createElement("button");
+  b.textContent = a.nombre;
+  b.onclick = () => window.open(a.url, "_blank");
+  $("grid").appendChild(b);
+});
+
+pintar();
+</script>
+</body>
+</html>
