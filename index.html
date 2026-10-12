@@ -327,7 +327,8 @@ yt.href = YT_URL;
   a.textContent = "Anuncio · toca aquí";
   a.addEventListener("click", () => {
     permitirSalida();
-    ultimoAd = Date.now();          // si la página se oculta ahora, cuenta como anuncio abierto
+    ultimoAd = Date.now();
+    if (!adHecho) { pendAd = true; guardar(); }   // se acredita al regresar a la web
     if (ENLACES_CUADROS[i]) window.open(ENLACES_CUADROS[i], "_blank");
     // si no hay enlace, el popunder de Monetag abre la ventana con este mismo toque
   });
@@ -552,6 +553,7 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 addEventListener("focus", verificar);
+addEventListener("pageshow", verificar);
 
 btn.addEventListener("click", () => {
   // 2º paso: terminó la cuenta regresiva, pasa a la siguiente parte
