@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta name="monetag" content="8d4e60aeac8deaa4d3cfd672660a63c7">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Descargas</title>
 
-<!-- Anuncios automáticos (pon tu ID de editor) -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+<link rel="icon" href="https://i.imgur.com/iU2NjpS.png">
+<link rel="apple-touch-icon" href="https://i.imgur.com/iU2NjpS.png">
 
-<!-- Verificación humana: Cloudflare Turnstile -->
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<!-- Verificación humana: Cloudflare Turnstile (render explícito) -->
+<script>window.onTurnstile=function(){if(window.cargarTurnstile)window.cargarTurnstile();};</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstile" async defer></script>
 
 <style>
   :root{
@@ -59,7 +59,10 @@
       background:linear-gradient(110deg,transparent 35%,#ffffff0a 50%,transparent 65%);
       transform:translateX(-100%);animation:brillo 3.6s ease-in-out infinite}
   @keyframes brillo{0%{transform:translateX(-100%)}60%,100%{transform:translateX(100%)}}
+  .ad{cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9a9ab4;font-size:14px;letter-spacing:.5px;user-select:none}
   .ad:active{transform:scale(.98)}
+  .logo{width:64px;height:64px;border-radius:16px;margin-bottom:10px}
+  #verifMsg{color:#ff9a9a;font-size:14px;min-height:18px}
   .ad.done{border-color:#7c5cff88;box-shadow:0 0 28px #7c5cff33,0 12px 32px #0009,inset 0 1px 0 #ffffff0d}
 
   /* Botones */
@@ -107,9 +110,6 @@
                    70%{box-shadow:0 8px 28px #12c15a66,0 0 0 18px #2ee57a00}
                    100%{box-shadow:0 8px 28px #12c15a66,0 0 0 0 #2ee57a00}}
 </style>
-<!-- Se quitó la zona OnClick/Popunder 12014639 para evitar anuncios al tocar la página. -->
-<!-- Banner Vignette Monetag: zona 12014841 (puede mostrarse como superposición, no dentro de los cuadros). -->
-<script>(function(s){s.dataset.zone='12014841',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </head>
 <body>
 
@@ -125,16 +125,18 @@
   </div>
 </div>
 
+<!-- Aviso de reinicio -->
+<div id="toast" class="hidden">Reinicio por minimizar o salir</div>
 
 <!-- Verificación al entrar -->
 <div id="verif" class="overlay">
   <div class="panel">
+    <img class="logo" src="https://i.imgur.com/iU2NjpS.png" alt="">
     <h2>Verificando</h2>
     <p>Confirma que eres humano para continuar</p>
-    <div class="cf-turnstile"
-         data-sitekey="1x00000000000000000000AA"
-         data-callback="humanoOk"
-         data-theme="dark"></div>
+    <div id="ts" style="display:flex;justify-content:center;min-height:65px"></div>
+    <p id="verifMsg"></p>
+    <button id="verifRetry" class="hidden">Reintentar</button>
   </div>
 </div>
 
@@ -168,28 +170,46 @@
 <script>
 // ---------- CONFIG ----------
 // Puedes tocar cualquiera de estos anuncios, las veces que quieras
-// Los cuadros quedan reservados para un código de banner compatible.
-// No usar enlaces example.com como si fueran anuncios reales.
-const ADS = [];
-const YT_URL = "https://www.youtube.com/@TU_CANAL";
-const WA_URL = "https://whatsapp.com/channel/TU_CANAL";
+// Monetag: en cada zona pega el dominio que aparece en "Get tag" (https://DOMINIO/tag.min.js)
+const ZONAS = {
+  ventana:  { zone: "12014639", src: "https://al5sm.com/tag.min.js" },  // OnClick (Popunder) -> anuncio por ventana
+  inpage:   { zone: "12014927", src: "https://nap5k.com/tag.min.js" },  // In-Page Push      -> automático
+  vignette: { zone: "12014841", src: "https://n6wxm.com/vignette.min.js" }   // Vignette Banner   -> automático
+};
+// Opcional: enlace directo de Monetag para cada cuadro (si lo dejas vacío, el cuadro dispara la ventana del popunder)
+const ENLACES_CUADROS = ["", ""];
+const YT_URL = "https://youtube.com/@kendymods?si=CKBIsI2QV22YdW5Q";
+const WA_URL = "https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40";
+
+// Verificación humana: pon tu sitekey real de Cloudflare Turnstile (esta es de prueba, siempre pasa)
+const TURNSTILE_SITEKEY = "1x00000000000000000000AA";
+const VERIFY_URL = "";   // opcional: tu endpoint que valida el token (devuelve {success:true})
+const VENTANA_TOQUE = 3000;  // un toque en la página justo antes de salir = abrió un anuncio, no es minimizar
 
 const TOTAL = 6, SEGUNDOS = 15, ESPERA_OCULTA = 5000;
 const VENTANA_SALIDA = 8000;           // salir a un anuncio/YouTube/WhatsApp no cuenta como reinicio
 const VIGENCIA = 30 * 60 * 1000;       // la verificación dura 30 min
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAWr9YM0YAG0mx0SEk3qNEhjeS1MOu_2lg",
-  authDomain: "kendy-57bcd.firebaseapp.com",
-  databaseURL: "https://kendy-57bcd-default-rtdb.firebaseio.com",
-  projectId: "kendy-57bcd",
-  storageBucket: "kendy-57bcd.firebasestorage.app",
-  messagingSenderId: "678778497788",
-  appId: "1:678778497788:web:e1459854025fd4a1f98579",
-  measurementId: "G-Z3GD2Y1588"
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
+  projectId: "TU_PROYECTO",
+  appId: "TU_APP_ID"
 };
 
 const $ = id => document.getElementById(id);
+
+// ---------- ANUNCIOS MONETAG ----------
+const zonaOk = z => z.src && !z.src.includes("PEGA_");
+function cargarAnuncios() {
+  Object.values(ZONAS).forEach(z => {
+    if (!zonaOk(z)) return;
+    const s = document.createElement("script");
+    s.dataset.zone = z.zone; s.src = z.src; s.async = true;
+    document.body.appendChild(s);
+  });
+}
 
 // ---------- DETECTOR DE BLOQUEADOR ----------
 async function hayBloqueador() {
@@ -206,9 +226,10 @@ async function hayBloqueador() {
   if (oculto) return true;
 
   // 2) Prueba de red (detecta DNS y bloqueadores de red)
+  const z = Object.values(ZONAS).find(zonaOk);
+  if (!z) return false;
   try {
-    await fetch("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?t=" + Date.now(),
-                {mode: "no-cors", cache: "no-store"});
+    await fetch(z.src + "?t=" + Date.now(), {mode: "no-cors", cache: "no-store"});
   } catch (e) {
     return navigator.onLine; // si no hay internet, no lo cuenta como bloqueador
   }
@@ -268,14 +289,18 @@ let pendYt   = !!S.pendYt;       // salió a YouTube, falta que regrese
 let listo    = !!S.listo;        // pasó la espera de 5 s: botón habilitado
 let cuentaOk = !!S.cuentaOk;     // terminó los 15 s: botón para pasar a la siguiente parte
 let contando = !!S.contando;
-let timerCuenta = null, timerEspera = null, espFin = 0, finCuentaGuardada = 0;
-let exento = 0;                  // hasta cuándo salir NO cuenta como reinicio
+let salioApps = !!S.salioApps;   // minimizó/salió estando en las apps
+let timerCuenta = null, timerEspera = null, espFin = 0, avisoPendiente = false;
+let exento = 0;                  // hasta cuándo salir NO cuenta como reinicio (anuncio/YouTube/WhatsApp)
+let ultimoToque = 0, ultimoAd = 0;
+let salida = S.salida || 0;      // última salida permitida (por si la pestaña se recarga)
+addEventListener("pointerdown", () => { ultimoToque = Date.now(); }, true);
 
 function guardar() {
   try {
     localStorage.setItem("estado", JSON.stringify({
       verif, fin, paso, adHecho, ytHecho, pendAd, pendYt, listo, cuentaOk,
-      contando, espera: !!timerEspera, salioApps
+      contando, espera: !!timerEspera, salioApps, espFin, salida
     }));
   } catch (e) {}
 }
@@ -284,7 +309,7 @@ const btn = $("btn"), yt = $("yt");
 const requiereYT = () => paso === TOTAL;
 
 // Salidas permitidas (anuncio, YouTube, WhatsApp): no reinician
-function permitirSalida() { exento = Date.now() + VENTANA_SALIDA; }
+function permitirSalida() { exento = Date.now() + VENTANA_SALIDA; salida = Date.now(); guardar(); }
 
 // ---------- ENLACES ----------
 document.querySelectorAll(".wa").forEach(a => {
@@ -294,16 +319,17 @@ document.querySelectorAll(".wa").forEach(a => {
 yt.href = YT_URL;
 
 // ---------- ANUNCIOS (se puede tocar cualquiera, las veces que quieras) ----------
-ADS.forEach((url, i) => {
-  const a = document.createElement("a");
+[0, 1].forEach(i => {
+  const a = document.createElement("div");
   a.className = "ad";
-  a.href = url;
-  a.target = "_blank";
-  a.rel = "noopener";
+  a.setAttribute("role", "button");
   a.setAttribute("aria-label", "Anuncio");
+  a.textContent = "Anuncio · toca aquí";
   a.addEventListener("click", () => {
     permitirSalida();
-    if (!adHecho) { pendAd = true; guardar(); }
+    ultimoAd = Date.now();          // si la página se oculta ahora, cuenta como anuncio abierto
+    if (ENLACES_CUADROS[i]) window.open(ENLACES_CUADROS[i], "_blank");
+    // si no hay enlace, el popunder de Monetag abre la ventana con este mismo toque
   });
   $(i === 0 ? "ads1" : "ads2").appendChild(a);
 });
@@ -333,8 +359,8 @@ function pintarBtn() {
   } else {
     btn.disabled = true;
     btn.textContent = requiereYT()
-      ? "Espera y luego continúa a YouTube"
-      : "Espera 5 segundos para continuar";
+      ? "Toca el anuncio y sigue en YouTube"
+      : "Toca un anuncio y espera 5 segundos";
   }
 }
 
@@ -344,11 +370,18 @@ function pintar() {
   pintarBtn();
 }
 
+function aviso() {
+  const t = $("toast");
+  t.classList.remove("hidden");
+  setTimeout(() => t.classList.add("hidden"), 2000);
+}
+
 function reiniciar() {
   clearInterval(timerCuenta); timerCuenta = null;
   clearTimeout(timerEspera); timerEspera = null;
   contando = false; paso = 1; fin = false;
   adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = false;
+  salioApps = false;
   guardar();
   $("apps").classList.add("hidden");
   $("gate").classList.remove("hidden");
@@ -368,40 +401,81 @@ function mostrarWeb() {
   $("gate").classList.remove("hidden");
   $("fab").classList.remove("hidden");
   iniciarFirebase();
+  cargarAnuncios();
 }
 
 function restaurar() {
   if (fin) {
-    mostrarApps();
+    if (salioApps) { reiniciar(); aviso(); }   // volvió de una descarga: empieza de cero
+    else mostrarApps();
     return;
   }
-  // Al volver de segundo plano, conserva el progreso.
-  if (contando && finCuentaGuardada && Date.now() >= finCuentaGuardada) {
-    contando = false;
-    cuentaOk = true;
-    finCuentaGuardada = 0;
-    guardar();
-  }
-  if (S.espera && !listo) {
-    // La espera se vuelve a comprobar al regresar, sin reiniciar el progreso.
-    timerEspera = null;
+  // Si se recargó o salió en plena espera, se reinicia
+  if (contando || S.espera) {
+    // Si la pestaña se recargó justo tras abrir un anuncio, se conserva la espera
+    if (S.espera && !contando && salida && Date.now() - salida < 600000) {
+      espFin = S.espFin || 0;
+      if (Date.now() >= espFin) finEspera();
+      else timerEspera = setTimeout(finEspera, espFin - Date.now());
+      pintar(); verificar(); return;
+    }
+    reiniciar(); aviso(); return;
   }
   pintar();
   verificar();
-  revisarListo();
 }
 
 // ---------- VERIFICACIÓN HUMANA ----------
-window.humanoOk = function (token) {
-  // Idealmente envía "token" a tu servidor para validarlo
+window.humanoOk = async function (token) {
+  if (VERIFY_URL) {
+    try {
+      const r = await fetch(VERIFY_URL, {method: "POST", headers: {"Content-Type": "application/json"},
+                                         body: JSON.stringify({token})});
+      const j = await r.json();
+      if (!j.success) { falloVerif("No se pudo verificar. Reintenta."); return; }
+    } catch (e) { falloVerif("Error de conexión al verificar. Reintenta."); return; }
+  }
   verif = Date.now();
   paso = 1; fin = false;
-  adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = contando = false;
+  adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = contando = salioApps = false;
   guardar();
   mostrarWeb();
   pintar();
-  revisarListo();
 };
+
+let tsId = null, tsTimer = null;
+function falloVerif(m) {
+  if (!$("verifMsg")) return;
+  $("verifMsg").textContent = m;
+  $("verifRetry").classList.remove("hidden");
+}
+window.cargarTurnstile = function () {
+  if (!$("ts")) return;                                  // ya verificado
+  if (!window.turnstile) {                               // el script aún no carga
+    clearTimeout(tsTimer);
+    tsTimer = setTimeout(() => { if (!window.turnstile)
+      falloVerif("No se pudo cargar la verificación. Revisa tu conexión o desactiva el DNS/bloqueador."); }, 12000);
+    return;
+  }
+  clearTimeout(tsTimer);
+  try {
+    if (tsId !== null) { turnstile.reset(tsId); return; }
+    tsId = turnstile.render("#ts", {
+      sitekey: TURNSTILE_SITEKEY, theme: "dark",
+      callback: window.humanoOk,
+      "error-callback": () => falloVerif("Error en la verificación. Reintenta."),
+      "expired-callback": () => falloVerif("La verificación expiró. Reintenta."),
+      "timeout-callback": () => falloVerif("Tiempo agotado. Reintenta.")
+    });
+  } catch (e) { falloVerif("No se pudo iniciar la verificación."); }
+};
+$("verifRetry").addEventListener("click", () => {
+  if (window.turnstile && tsId !== null) {
+    $("verifMsg").textContent = ""; $("verifRetry").classList.add("hidden");
+    turnstile.reset(tsId);
+  } else location.reload();
+});
+cargarTurnstile();
 
 if (verif && Date.now() - verif < VIGENCIA) {
   mostrarWeb();
@@ -433,7 +507,8 @@ function revisarEspera() {
 }
 function revisarListo() {
   if (listo || timerEspera || contando || cuentaOk) return;
-  // El avance no depende de tocar anuncios ni notificaciones.
+  if (!adHecho) return;
+  if (requiereYT() && !ytHecho) return;
   espFin = Date.now() + ESPERA_OCULTA;
   timerEspera = setTimeout(finEspera, ESPERA_OCULTA);
   guardar();
@@ -441,11 +516,39 @@ function revisarListo() {
 // Por si el navegador congela el temporizador en segundo plano
 setInterval(revisarEspera, 400);
 
-// Minimizar o cambiar de app no reinicia el progreso.
+// Salir o minimizar
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
+  if (document.visibilityState === "hidden") {
+    // Salir a YouTube o WhatsApp está permitido
+    const enApps = !$("apps").classList.contains("hidden");
+    if (Date.now() < exento) {
+      if (!enApps && !adHecho && Date.now() - ultimoAd < VENTANA_SALIDA) pendAd = true;
+      guardar();
+      return;
+    }
+    // Un toque en la página justo antes de ocultarse = se abrió un anuncio (aunque toques 2 veces), no es minimizar
+    if (!enApps && Date.now() - ultimoToque < VENTANA_TOQUE) {
+      if (!adHecho && Date.now() - ultimoAd < VENTANA_SALIDA) pendAd = true;
+      guardar();
+      return;
+    }
+    if (!enApps && (contando || timerEspera)) {
+      reiniciar();
+      avisoPendiente = true;
+    } else if (enApps) {
+      // En las apps: si sale (ej. a descargar), al volver reinicia desde cero
+      salioApps = true;
+      guardar();
+    }
+  } else {
+    exento = 0;
+    if (salioApps) {
+      reiniciar();
+      aviso();
+      return;
+    }
+    if (avisoPendiente) { avisoPendiente = false; aviso(); }
     verificar();
-    revisarEspera();
   }
 });
 addEventListener("focus", verificar);
@@ -460,15 +563,12 @@ btn.addEventListener("click", () => {
   guardar();
   btn.disabled = true;
   const finCuenta = Date.now() + SEGUNDOS * 1000;
-  finCuentaGuardada = finCuenta;
-  guardar();
   const tick = () => {
     const t = Math.ceil((finCuenta - Date.now()) / 1000);
     if (t > 0) { btn.textContent = `Espera ${t}s...`; return; }
     clearInterval(timerCuenta); timerCuenta = null;
     contando = false;
     cuentaOk = true;
-    finCuentaGuardada = 0;
     guardar();
     pintarBtn();      // aparece el botón "Continuar"
   };
@@ -487,7 +587,6 @@ function siguiente() {
   adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = false;
   guardar();
   pintar();
-  revisarListo();
 }
 
 // ---------- APPS (vacío por ahora) ----------
@@ -500,7 +599,6 @@ APPS.forEach(a => {
 });
 
 pintar();
-if (verif && Date.now() - verif < VIGENCIA) revisarListo();
 </script>
 </body>
 </html>
