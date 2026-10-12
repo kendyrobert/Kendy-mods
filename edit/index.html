@@ -25,9 +25,7 @@ button.sec{background:#1a1a24}button.del{background:#c80f2e}button:disabled{opac
     <b id="titForm">Agregar app</b>
     <input id="nombre" placeholder="Nombre de la app (texto del botón)">
     <input id="url" type="url" placeholder="Enlace al presionar el botón (https://...)">
-    <input id="file" type="file" accept="image/*">
-    <img id="prev" class="hidden" style="width:56px;height:56px;border-radius:12px;object-fit:cover;margin-top:6px">
-    <div class="row"><button id="guardar">Guardar</button><button id="cancelar" class="sec hidden">Cancelar</button></div>
+    <div class="row"><button id="guardar">Publicar</button><button id="cancelar" class="sec hidden">Cancelar</button></div>
   </div>
   <div class="card"><b>Apps (<span id="n">0</span>)</b><div id="lista"></div></div>
   <button id="salir" class="sec" style="width:100%">Cerrar sesión</button>
@@ -78,12 +76,11 @@ function editar(a) {
   editId = a.id; iconoActual = a.icono || "";
   $("nombre").value = a.nombre; $("url").value = a.url;
   $("titForm").textContent = "Editar app"; $("cancelar").classList.remove("hidden");
-  $("prev").src = iconoActual; $("prev").classList.toggle("hidden", !iconoActual);
   scrollTo({top: 0, behavior: "smooth"});
 }
 function limpiar() {
-  editId = null; iconoActual = ""; $("nombre").value = $("url").value = $("file").value = "";
-  $("prev").classList.add("hidden"); $("titForm").textContent = "Agregar app"; $("cancelar").classList.add("hidden");
+  editId = null; iconoActual = ""; $("nombre").value = $("url").value = "";
+  $("titForm").textContent = "Agregar app"; $("cancelar").classList.add("hidden");
 }
 $("cancelar").onclick = limpiar;
 
@@ -100,13 +97,10 @@ $("guardar").onclick = async () => {
   $("guardar").disabled = true; msg("Guardando...");
   try {
     let icono = iconoActual;
-    const f = $("file").files[0];
-    if (f) icono = await subir(f);
     if (editId) await db.ref("apps/" + editId).update({nombre, url, icono});
     else await db.ref("apps").push({nombre, url, icono, orden: Date.now()});
-    limpiar(); msg("");
+    limpiar(); msg("✔ Publicado");
   } catch (e) { msg("Error: " + e.message); }
   $("guardar").disabled = false;
 };
 </script></body></html>
-  
