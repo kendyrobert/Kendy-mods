@@ -107,8 +107,9 @@
                    70%{box-shadow:0 8px 28px #12c15a66,0 0 0 18px #2ee57a00}
                    100%{box-shadow:0 8px 28px #12c15a66,0 0 0 0 #2ee57a00}}
 </style>
-<!-- Monetag: zona 12014639 -->
-<script>(function(s){s.dataset.zone='12014639',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+<!-- Se quitó la zona OnClick/Popunder 12014639 para evitar anuncios al tocar la página. -->
+<!-- Banner Vignette Monetag: zona 12014841 (puede mostrarse como superposición, no dentro de los cuadros). -->
+<script>(function(s){s.dataset.zone='12014841',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </head>
 <body>
 
@@ -167,10 +168,9 @@
 <script>
 // ---------- CONFIG ----------
 // Puedes tocar cualquiera de estos anuncios, las veces que quieras
-const ADS = [
-  "https://example.com/tu-anuncio-1",   // va arriba del botón
-  "https://example.com/tu-anuncio-2"    // va más abajo, separado
-];
+// Los cuadros quedan reservados para un código de banner compatible.
+// No usar enlaces example.com como si fueran anuncios reales.
+const ADS = [];
 const YT_URL = "https://www.youtube.com/@TU_CANAL";
 const WA_URL = "https://whatsapp.com/channel/TU_CANAL";
 
@@ -333,8 +333,8 @@ function pintarBtn() {
   } else {
     btn.disabled = true;
     btn.textContent = requiereYT()
-      ? "Toca el anuncio y sigue en YouTube"
-      : "Toca un anuncio y espera 5 segundos";
+      ? "Espera y luego continúa a YouTube"
+      : "Espera 5 segundos para continuar";
   }
 }
 
@@ -388,6 +388,7 @@ function restaurar() {
   }
   pintar();
   verificar();
+  revisarListo();
 }
 
 // ---------- VERIFICACIÓN HUMANA ----------
@@ -399,6 +400,7 @@ window.humanoOk = function (token) {
   guardar();
   mostrarWeb();
   pintar();
+  revisarListo();
 };
 
 if (verif && Date.now() - verif < VIGENCIA) {
@@ -431,8 +433,7 @@ function revisarEspera() {
 }
 function revisarListo() {
   if (listo || timerEspera || contando || cuentaOk) return;
-  if (!adHecho) return;
-  if (requiereYT() && !ytHecho) return;
+  // El avance no depende de tocar anuncios ni notificaciones.
   espFin = Date.now() + ESPERA_OCULTA;
   timerEspera = setTimeout(finEspera, ESPERA_OCULTA);
   guardar();
@@ -486,6 +487,7 @@ function siguiente() {
   adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = false;
   guardar();
   pintar();
+  revisarListo();
 }
 
 // ---------- APPS (vacío por ahora) ----------
@@ -498,6 +500,7 @@ APPS.forEach(a => {
 });
 
 pintar();
+if (verif && Date.now() - verif < VIGENCIA) revisarListo();
 </script>
 </body>
 </html>
