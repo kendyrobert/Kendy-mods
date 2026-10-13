@@ -26,6 +26,7 @@ footer{text-align:center;padding:20px;color:#888;font-size:13px}
 #gate{display:none;position:fixed;inset:0;z-index:99999;background:rgba(5,5,15,.94);align-items:center;justify-content:center;padding:20px}
 .gbox{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:380px;text-align:center}
 .gbox h2{color:#ff5c8a}.gbox p{margin:10px 0}#gmsg{color:#ffd54f;min-height:22px}
+.dlb{margin:20px auto}
 </style>
 </head>
 <body>
@@ -56,21 +57,13 @@ const lorem="Aquí encontrarás archivos, mods, paneles y configuraciones para F
 let part=1, yt=false;
 const $=id=>document.getElementById(id);
 /* ===== AGREGA TUS BOTONES AQUÍ =====
-   Cada línea es un botón: ["Texto del botón","https://tu-enlace"]
-   Para otra categoría, copia un bloque {titulo, texto, botones} */
+   Cada línea es un botón (uno debajo de otro): ["Texto del botón","https://tu-enlace"],
+   Para agregar otro, copia una línea y ponla debajo. Todas llevan coma al final. */
 const DESCARGAS=[
-  {titulo:"Free Fire",texto:"Archivos y mods para Free Fire.",botones:[
-    ["⬇ WALLHACK_BERMUDA 12/10/2026","https://www.mediafire.com/file/ouhdf3i2x77dd1w/WALLHACK_BERMUDA.zip/file/"],
-    ["⬇ nada todavia","https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40/"],
-    ["⬇ nada todavía","https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40/"],
-    ["⬇ nada todavía","https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40/"]
-  ]},
-  {titulo:"Otros mods",texto:"Más apps y archivos.",botones:[
-    ["⬇ Descargar App","https://www.mediafire.com/"]
-  ]}
+  ["⬇ Descargar App","https://www.mediafire.com/"]
 ];
 /* ==================================== */
-$("dlList").innerHTML=DESCARGAS.map(c=>`<div class="card"><h3>${c.titulo}</h3><p>${c.texto}</p>${c.botones.map(b=>`<a class="btn mf" href="${b[1]}" target="_blank" rel="noopener">${b[0]}</a>`).join("")}</div>`).join("");
+$("dlList").innerHTML=DESCARGAS.map(b=>`<a class="btn mf dlb" href="${b[1]}" target="_blank" rel="noopener">${b[0]}</a>`).join("");
 
 const KEY="kendy_state";
 let st={part:1,stage:"cd1",end:0}, timer=null, shown=0;
@@ -114,7 +107,7 @@ function go(){
   clearInterval(timer);
   if(st.stage==="dl"){
     $("steps").style.display="none";$("dl").style.display="block";$("prog").textContent="✔";
-    const chk=()=>{if(Date.now()>=st.end){reset();go();return true}return false};
+    const chk=()=>{if(Date.now()>=st.end){clearInterval(timer);reset();location.reload();return true}return false};
     if(!chk())timer=setInterval(chk,500);
     return;
   }
@@ -142,7 +135,7 @@ function go(){
     });
   }
   else if(st.stage==="yt")next("ytready");
-  else if(st.stage==="ytready")btn("✅ Ver descargas","",()=>next("dl",Date.now()+20000));
+  else if(st.stage==="ytready")btn("✅ Ver descargas","",()=>{st.stage="dl";st.end=Date.now()+20000;save();location.reload();});
 }
 /* ===== SI SALES DE LA WEB 15 SEGUNDOS O MÁS, SE REINICIA TODO (excepto al ir a YouTube) ===== */
 const AWAY=15000;
@@ -150,13 +143,20 @@ function markAway(){if(st.stage==="yt")return;try{localStorage.setItem("kendy_aw
 function checkAway(){
   let t=0;
   try{t=+localStorage.getItem("kendy_away")||0;localStorage.removeItem("kendy_away")}catch(e){}
-  if(t&&Date.now()-t>=AWAY&&st.stage!=="yt"){reset();shown=0;go();}
+  if(t&&Date.now()-t>=AWAY&&st.stage!=="yt"){const d=st.stage==="dl";reset();if(d){location.reload();return;}shown=0;go();}
 }
 document.addEventListener("visibilitychange",()=>{document.visibilityState==="hidden"?markAway():checkAway()});
 window.addEventListener("pagehide",markAway);
 load();
 if(st.stage==="yt")st.stage="ytready";
 checkAway();
+function loadAds(){
+  if(st.stage==="dl")return;   /* en la sección de descargas NO se cargan anuncios */
+  const a=document.createElement("script");
+  a.dataset.zone="12014639";a.src="https://al5sm.com/tag.min.js";
+  document.body.appendChild(a);
+}
+loadAds();
 go();
 
 /* ===== DETECTOR DE BLOQUEO DE ANUNCIOS / DNS ===== */
@@ -183,7 +183,7 @@ let epoch=0, graceUntil=0;
 /* al salir/volver (anuncio) se ignoran las verificaciones en curso y se espera 3s */
 document.addEventListener("visibilitychange",()=>{epoch++;graceUntil=Date.now()+3000;});
 async function check(manual){
-  if(checking)return;
+  if(checking||st.stage==="dl")return;
   if(!manual&&(document.visibilityState!=="visible"||Date.now()<graceUntil))return;
   checking=true;
   if(!document.body.contains(gate))document.body.appendChild(gate);
@@ -203,6 +203,5 @@ $("gretry").onclick=()=>{$("gmsg").textContent="Verificando...";check(true);};
 check();
 setInterval(check,4000);
 </script>
-<script>(function(s){s.dataset.zone='12014639',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </body>
 </html>
