@@ -99,6 +99,29 @@
   .tick{overflow:hidden;white-space:nowrap;margin-top:12px;font-size:13px;color:#ffb347}
   .tick span{display:inline-block;padding-left:100%;animation:marq 16s linear infinite}
   @keyframes marq{to{transform:translateX(-100%)}}
+  html,body{max-width:100%;overflow-x:hidden}
+  body{overflow-wrap:break-word}
+  img,svg,iframe,video{max-width:100%}
+  #gate,#apps,.card,.art,.arthead,.panel{min-width:0;max-width:100%}
+  .gal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+  .gal div{aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:42px;
+           background:radial-gradient(120% 120% at 30% 0%,#4a1a08,#12121a 75%);border:1px solid #ff7a1844}
+  .gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px}
+  .gal small{display:block;text-align:center;color:#8d8da3;font-size:12px;margin-top:4px}
+  .art{text-align:left;padding:0 2px}
+  .art h3{font-size:23px;line-height:1.25;margin:0 0 10px;color:#fff}
+  .art p{color:#cfcfe0;line-height:1.75;font-size:16px;margin:0 0 12px}
+  .art ul{color:#cfcfe0;line-height:1.75;font-size:16px;padding-left:22px;margin:0}
+  .arthead{text-align:left}
+  .arthead .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.5px;padding-bottom:12px;border-bottom:1px solid #ffffff14}
+  .arthead .brand img{width:34px;height:34px;border-radius:9px}
+  .arthead h1{font-size:30px;line-height:1.2;margin:16px 0 8px;color:#fff}
+  .arthead .meta{color:#8d8da3;font-size:14px}
+  .arthead .hero2{margin-top:14px;border-radius:16px;min-height:140px;display:flex;align-items:center;justify-content:center;font-size:64px;
+                  background:radial-gradient(120% 120% at 30% 0%,#4a1a08,#12121a 75%);border:1px solid #ff7a1844}
+  .plabel{text-align:center;color:#8d8da3;font-size:13px;margin-bottom:6px}
+  #bnrBox{display:flex;justify-content:center;overflow:hidden}
+  #btn{margin-top:14px;margin-bottom:14px}
   .ad{border-color:#ff7a1866;color:#ffd9b0;font-weight:700;font-size:16px}
 
   .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
@@ -161,12 +184,16 @@
 </div>
 
 <section id="gate" class="hidden">
-  <div id="head" class="card hero"></div>
+  <div id="head" class="arthead"></div>
   <a id="yt" class="ytbtn hidden" href="#" target="_blank" rel="noopener">Ir a seguirme en YouTube</a>
   <button id="btn" disabled></button>
   <div id="ads1" class="slot"></div>
-  <div id="info" class="card"></div>
-  <div id="extra" class="card"></div>
+  <div id="info" class="art"></div>
+  <div id="extra" class="art"></div>
+  <div id="artC" class="art"></div>
+  <div id="artD" class="art"></div>
+  <div id="gal" class="art"></div>
+  <div id="bnr1" style="display:none"><div class="plabel">Publicidad</div><div id="bnrBox"></div></div>
 </section>
 
 <section id="apps" class="hidden">
@@ -228,6 +255,7 @@ const $ = id => document.getElementById(id);
 // ---------- ANUNCIOS MONETAG ----------
 const zonaOk = z => z.src && !z.src.includes("PEGA_");
 function cargarAnuncios() {
+  montarBanner();
   Object.values(ZONAS).forEach(z => {
     if (!zonaOk(z)) return;
     const s = document.createElement("script");
@@ -374,41 +402,93 @@ yt.addEventListener("click", () => {
   if (!ytHecho) { pendYt = true; guardar(); }
 });
 
-// ---------- DECORACIÓN POR PASO ----------
-const IMAGENES_FF = [];   // opcional: enlaces (https://...) de imágenes tuyas, una por paso o se repiten
+// ---------- ARTÍCULO POR PASO ----------
+const IMAGENES_FF = [];   // opcional: enlaces (https://...) de tus imágenes, una por parte
+const BANNER_HTML = ``;   // opcional: pega aquí el código completo (<script>...</script>) de tu banner 300x250
 const PASOS = [
-  {e:"🔥",t:"Prepárate para la partida",d:"Estás a 6 partes de tus apps. Sigue el orden y no cierres la web.",
-   tips:["Toca el cuadro para abrir el anuncio","Vuelve a la web y espera 5 segundos","Presiona el botón y espera la cuenta"],x:["🎯 Misión","Completa las 6 partes para desbloquear la lista de apps."]},
-  {e:"🪂",t:"Salta al mapa",d:"Buen aterrizaje. Cada parte te acerca más a la zona final.",
-   tips:["Puedes tocar el anuncio las veces que quieras","No pasa nada si cambias de pestaña a ver el anuncio","Mantén la web abierta"],x:["🗺️ Zona segura","Ver anuncios no te reinicia, ¡tranquilo!"]},
-  {e:"💎",t:"Recoge tu botín",d:"Vas por la mitad. Sigue juntando partes como un verdadero jugador.",
-   tips:["Chaleco y casco primero","Cúrate antes de pelear","Lleva munición de sobra"],x:["💎 Botín","Ya llevas la mitad del camino, sigue así."]},
-  {e:"⚡",t:"Modo ataque",d:"Rápido y sin miedo. La cuenta regresiva es tu momento de respirar.",
-   tips:["Usa la cobertura siempre","Escucha los pasos cerca","Cambia de posición seguido"],x:["⏱️ Ojo","Si sales de la web por 15 segundos o más, se reinicia todo."]},
-  {e:"🏆",t:"Casi en la final",d:"Queda el último círculo. Un par de partes más y listo.",
-   tips:["No te confíes en la recta final","Revisa la zona antes de moverte","Paciencia: ya casi es tuyo"],x:["🏆 Último círculo","Falta muy poco, mantén la web abierta."]},
-  {e:"👑",t:"¡Última parte!",d:"Sigue mi canal de YouTube y desbloquea todas las apps.",
-   tips:["Toca el botón rojo para ir a YouTube","Regresa y espera 5 segundos","Después verás todas las apps"],x:["👑 Booyah","Al terminar esta parte se abre la lista de apps."]}
+  {e:"🔥",t:"Cómo empezar bien cada partida",
+   a:["Antes de saltar","Una buena partida empieza antes de tocar el suelo. Revisa tu mochila, mira hacia dónde va la zona segura y elige un punto de aterrizaje que no esté demasiado lleno.","Aterrizar lejos del centro te da tiempo para buscar armas y chaleco sin presión."],
+   b:["Lo básico","Hay hábitos simples que mejoran tus resultados desde la primera partida:",["Aterriza cerca de cobertura","Busca arma y chaleco antes de pelear","Mira el mapa cada pocos segundos"]]},
+  {e:"🪂",t:"Elegir dónde aterrizar",
+   a:["Zonas calientes y zonas tranquilas","Los puntos con muchos edificios suelen traer peleas desde el segundo uno. Si apenas estás aprendiendo, empieza por zonas medianas: hay botín suficiente y menos jugadores.","Con el tiempo irás conociendo cada rincón del mapa y podrás arriesgar más."],
+   b:["Qué tener en cuenta","Antes de decidir tu punto de salto, piensa en lo siguiente:",["La distancia a la zona segura","Si juegas solo o en escuadra","Cuántos jugadores saltan cerca de ti"]]},
+  {e:"💎",t:"Botín: qué recoger primero",
+   a:["Prioridades al saquear","No hace falta llevarse todo. Un arma principal, una secundaria, chaleco, casco y algo para curarte ya te ponen en buena posición.","Revisa tu inventario seguido para no cargar objetos que no usarás."],
+   b:["Orden recomendado","Cuando tengas poco tiempo, sigue este orden:",["Arma principal y munición","Chaleco y casco","Botiquines y objetos de curación"]]},
+  {e:"⚡",t:"Mejorar tu puntería y tus reflejos",
+   a:["Practica con calma","La puntería mejora con repetición. Dedica unos minutos a un campo de entrenamiento y ajusta la sensibilidad hasta que apuntar te resulte cómodo.","Cambios pequeños y constantes funcionan mejor que cambiar todo de golpe."],
+   b:["Hábitos que ayudan","Tu mano y tu cabeza se entrenan juntas:",["Juega sesiones cortas y descansa","Usa siempre la misma sensibilidad","Revisa tus repeticiones para ver errores"]]},
+  {e:"🏆",t:"El final de la partida",
+   a:["Último círculo","Cuando quedan pocos jugadores, la paciencia vale más que la prisa. Busca una posición con cobertura y deja que otros se desgasten primero.","Moverte sin necesidad es la forma más rápida de quedar al descubierto."],
+   b:["Antes del último círculo","Prepárate con tiempo:",["Guarda curación y munición","Elige cobertura dentro de la zona","Escucha pasos y disparos cercanos"]]},
+  {e:"👑",t:"Cuidar tu celular para jugar mejor",
+   a:["Rendimiento y batería","Un celular lleno de apps abiertas rinde peor. Cierra lo que no uses, deja espacio libre en el almacenamiento y baja los gráficos si notas tirones.","Jugar con poca batería o con el equipo muy caliente también afecta tu experiencia."],
+   b:["Antes de jugar","Una revisión rápida te evita problemas:",["Cierra apps en segundo plano","Carga el celular o conéctalo","Usa una conexión estable"]]}
 ];
+// Orden de los elementos en cada parte (el botón nunca queda pegado a un anuncio)
 const LAYOUTS = [
-  {head:0,btn:1,ad:2,info:3,extra:4,yt:9},
-  {head:0,ad:1,btn:2,info:3,extra:4,yt:9},
-  {head:0,info:1,btn:2,extra:3,ad:4,yt:9},
-  {head:0,ad:1,info:2,btn:3,extra:4,yt:9},
-  {head:0,extra:1,ad:2,btn:3,info:4,yt:9},
-  {head:0,yt:1,btn:2,ad:3,info:4,extra:5}
+  ["head","btn","artA","ads1","artB","artC","bnr1","artD","gal"],
+  ["head","ads1","artA","artB","btn","artC","bnr1","artD","gal"],
+  ["head","artA","bnr1","artB","artC","btn","artD","ads1","gal"],
+  ["head","bnr1","artA","ads1","artB","artC","artD","btn","gal"],
+  ["head","artA","ads1","artB","bnr1","artC","artD","gal","btn"],
+  ["head","yt","artA","ads1","artB","artC","btn","artD","bnr1","gal"]
 ];
+// Textos extra que rotan entre las partes
+const POOL = [
+  ["Jugar en equipo","Una escuadra coordinada gana más partidas que cuatro jugadores sueltos. Repartan roles: uno abre las peleas, otro cubre y otro se encarga de curar y revivir.","Hablar poco pero claro ayuda más que hablar mucho: avisa dónde ves al enemigo y cuántos son."],
+  ["Sensibilidad y controles","Cada persona necesita una sensibilidad distinta. Empieza con valores medios y sube o baja de a poco hasta que puedas girar rápido sin pasarte del objetivo.","También conviene acomodar los botones para alcanzarlos sin mover demasiado los dedos."],
+  ["Gráficos y rendimiento","Si tu celular se calienta o se traba, bajar la calidad gráfica suele ayudar más de lo que parece. Es mejor jugar fluido que bonito.","Cerrar otras aplicaciones y liberar almacenamiento también mejora la fluidez."],
+  ["Comunicación con tu escuadra","Los mensajes cortos funcionan mejor: dirección, distancia y cantidad de enemigos. Evita discutir en plena pelea.","Después de la partida, comenten qué pasó y qué pueden mejorar para la siguiente."],
+  ["Errores comunes","Correr al descubierto, pelear sin curarte y saquear mientras hay enemigos cerca son errores que casi todos cometen al principio.","La buena noticia es que se corrigen con atención: antes de moverte, mira alrededor."],
+  ["Usar bien la cobertura","Paredes, rocas y vehículos te protegen, pero solo si te mueves de una a otra con cuidado. Asómate, dispara y vuelve a esconderte.","Cambia de lado de la cobertura para que el rival no sepa por dónde saldrás."],
+  ["Administrar el inventario","Un inventario ordenado te ahorra segundos que valen oro en una pelea. Lleva solo lo que vas a usar y descarta lo demás.","Equilibra la munición entre tus armas y guarda siempre algo para curarte."],
+  ["Descansar para mejorar","Jugar horas seguidas cansa la vista y la mente, y se nota en tu puntería. Haz pausas, toma agua y estira las manos.","Volver con la cabeza fresca suele dar mejores resultados que insistir cansado."]
+];
+let bannerListo = false;
+function montarBanner() {
+  if (!BANNER_HTML.trim()) return;
+  const box = $("bnrBox"), t = document.createElement("div");
+  t.innerHTML = BANNER_HTML;
+  [...t.childNodes].forEach(n => {
+    if (n.tagName === "SCRIPT") {
+      const sc = document.createElement("script");
+      [...n.attributes].forEach(a => sc.setAttribute(a.name, a.value));
+      sc.text = n.text; box.appendChild(sc);
+    } else box.appendChild(n.cloneNode(true));
+  });
+  bannerListo = true; pintarDeco();
+}
 function pintarDeco() {
   const P = PASOS[paso - 1], L = LAYOUTS[paso - 1];
-  const img = IMAGENES_FF.length ? '<img class="himg" src="' + IMAGENES_FF[(paso - 1) % IMAGENES_FF.length] + '" alt="">' : "";
+  const hero = IMAGENES_FF.length
+    ? '<img class="himg" src="' + IMAGENES_FF[(paso - 1) % IMAGENES_FF.length] + '" alt="" style="margin-top:14px">'
+    : '<div class="hero2">' + P.e + '</div>';
   let barra = "";
   for (let i = 1; i <= TOTAL; i++) barra += '<i class="' + (i < paso ? "ok" : i === paso ? "now" : "") + '"></i>';
-  $("head").innerHTML = img + '<div class="big">' + P.e + '</div><h2>' + P.t + '</h2><p>' + P.d + '</p><div class="bar">' + barra +
-    '</div><div class="tick"><span>🔥 Parte ' + paso + ' de ' + TOTAL + ' · 💎 Sigue adelante · 🎮 Únete a la comunidad de WhatsApp · 🏆 Ya casi</span></div>';
-  $("info").innerHTML = "<b>⚡ Consejos rápidos</b><ul>" + P.tips.map(t => "<li>" + t + "</li>").join("") + "</ul>";
-  $("extra").innerHTML = "<b>" + P.x[0] + "</b><p>" + P.x[1] + "</p>";
-  ["head", "info", "extra"].forEach(k => { $(k).style.order = L[k]; });
-  btn.style.order = L.btn; $("ads1").style.order = L.ad; yt.style.order = L.yt;
+  $("head").innerHTML = '<div class="brand"><img src="https://i.imgur.com/iU2NjpS.png" alt="">KENDY MODS</div>' +
+    '<h1>' + P.t + '</h1><div class="meta">⏱ 3 min · Parte ' + paso + ' de ' + TOTAL + ' · Admin</div>' + hero + '<div class="bar">' + barra + '</div>';
+  $("info").innerHTML = "<h3>" + P.a[0] + "</h3><p>" + P.a[1] + "</p><p>" + P.a[2] + "</p>";
+  $("extra").innerHTML = "<h3>" + P.b[0] + "</h3><p>" + P.b[1] + "</p><ul>" + P.b[2].map(x => "<li>" + x + "</li>").join("") + "</ul>";
+  [["artC", paso * 2], ["artD", paso * 2 + 1]].forEach(([id, n]) => {
+    const q = POOL[n % POOL.length];
+    $(id).innerHTML = "<h3>" + q[0] + "</h3><p>" + q[1] + "</p><p>" + q[2] + "</p>";
+  });
+  const caps = ["Estrategia", "Botín", "Victoria"], ems = ["🎯", "💎", "🏆"];
+  let g = "";
+  for (let k = 0; k < 3; k++) {
+    g += "<figure style='margin:0'>" + (IMAGENES_FF.length
+      ? "<img src='" + IMAGENES_FF[(paso + k) % IMAGENES_FF.length] + "' alt=''>"
+      : "<div>" + ems[k] + "</div>") + "<small>" + caps[k] + "</small></figure>";
+  }
+  $("gal").innerHTML = "<h3>Galería</h3><div class='gal'>" + g + "</div>";
+  const el = {head: $("head"), artA: $("info"), artB: $("extra"), artC: $("artC"), artD: $("artD"), gal: $("gal"), bnr1: $("bnr1"), ads1: $("ads1"), btn: btn, yt: yt};
+  Object.keys(el).forEach(k => {
+    const i = L.indexOf(k);
+    if (i >= 0) el[k].style.order = i;
+    if (k === "yt") return;                       // YouTube lo muestra/oculta su propia lógica
+    el[k].style.display = (i < 0 || (k === "bnr1" && !bannerListo)) ? "none" : "";
+  });
 }
 
 // ---------- PINTAR ----------
