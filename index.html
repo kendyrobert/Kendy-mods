@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kendy mods</title>
+<script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,Arial,sans-serif;background:#0f1020;color:#eee;line-height:1.6}
@@ -58,12 +59,14 @@ let part=1, yt=false;
 const $=id=>document.getElementById(id);
 /* ===== AGREGA TUS BOTONES AQUÍ =====
    Cada línea es un botón (uno debajo de otro): ["Texto del botón","https://tu-enlace"],
-   Para agregar otro, copia una línea y ponla debajo. Todas llevan coma al final. */
-const DESCARGAS=[
-  ["⬇ WALLHACK_BERMUDA 12/10/2026","https://www.mediafire.com/file/ouhdf3i2x77dd1w/WALLHACK_BERMUDA.zip/file/"]
-]; 
-/* ==================================== */
-$("dlList").innerHTML=DESCARGAS.map(b=>`<a class="btn mf dlb" href="${b[1]}" target="_blank" rel="noopener">${b[0]}</a>`).join("");
+   Para agregar otro, copia una línea y ponla ABAJO de la última: el más nuevo sale arriba en la web. Todas llevan coma al final. */
+   ¡OJO! Ahora los botones se editan en el archivo api/verificar.js (la lista DESCARGAS de allá).
+   Así los enlaces solo se entregan después de pasar el captcha. */
+const HCAPTCHA_SITEKEY="c9c2cd5a-b0a0-4b46-9a4a-c2b2bceea3e6";
+function renderLinks(list){
+  $("dlList").innerHTML=list.slice().reverse().map(b=>`<a class="btn mf dlb" href="${b[1]}" target="_blank" rel="noopener">${b[0]}</a>`).join("");
+}
+function getLinks(){try{return JSON.parse(sessionStorage.getItem("kendy_links"))}catch(e){return null}}
 
 const KEY="kendy_state";
 let st={part:1,stage:"cd1",end:0}, timer=null, shown=0;
@@ -106,6 +109,9 @@ function next(stage,end){st.stage=stage;st.end=end||0;save();go();}
 function go(){
   clearInterval(timer);
   if(st.stage==="dl"){
+    const L=getLinks();
+    if(!L){reset();location.reload();return;}
+    renderLinks(L);
     $("steps").style.display="none";$("dl").style.display="block";$("prog").textContent="✔";
     const chk=()=>{if(Date.now()>=st.end){clearInterval(timer);reset();location.reload();return true}return false};
     if(!chk())timer=setInterval(chk,500);
@@ -135,7 +141,23 @@ function go(){
     });
   }
   else if(st.stage==="yt")next("ytready");
-  else if(st.stage==="ytready")btn("✅ Ver descargas","",()=>{st.stage="dl";st.end=Date.now()+20000;save();location.reload();});
+  else if(st.stage==="ytready"){
+    $("act").innerHTML='<p style="margin-bottom:12px">Verifica que eres humano para ver las descargas</p><div id="hc" style="display:flex;justify-content:center"></div><p id="hmsg" style="color:#ffd54f;margin-top:10px;min-height:22px"></p>';
+    const draw=()=>{
+      if(!window.hcaptcha){setTimeout(draw,300);return;}
+      hcaptcha.render("hc",{sitekey:HCAPTCHA_SITEKEY,theme:"dark",callback:async token=>{
+        $("hmsg").textContent="Verificando...";
+        try{
+          const r=await fetch("/api/verificar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token})});
+          const d=await r.json();
+          if(!r.ok||!d.links)throw 0;
+          sessionStorage.setItem("kendy_links",JSON.stringify(d.links));
+          st.stage="dl";st.end=Date.now()+20000;save();location.reload();
+        }catch(e){$("hmsg").textContent="Falló la verificación, intenta de nuevo.";hcaptcha.reset();}
+      }});
+    };
+    draw();
+  }
 }
 /* ===== SI SALES DE LA WEB 15 SEGUNDOS O MÁS, SE REINICIA TODO (excepto al ir a YouTube) ===== */
 const AWAY=15000;
