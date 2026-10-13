@@ -45,10 +45,6 @@ const firebaseConfig = {
   appId: "1:678778497788:web:e1459854025fd4a1f98579",
   measurementId: "G-Z3GD2Y1588"
 };
-/* Lista de respaldo: solo se usa si Firebase no responde y no hay nada guardado */
-const DESCARGAS=[
-  ["⬇ WALLHACK_BERMUDA 13/10/2026","https://www.mediafire.com/file/ouhdf3i2x77dd1w/WALLHACK_BERMUDA.zip/file/"]
-];
 const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeUrl(u){return /^https?:\/\//i.test(u)?u:"#"}
@@ -59,15 +55,15 @@ function render(list){
 }
 let cached=null;
 try{cached=JSON.parse(localStorage.getItem("kendy_dl"))}catch(e){}
-render(Array.isArray(cached)&&cached.length?cached:DESCARGAS.slice().reverse());
+render(Array.isArray(cached)?cached:[]);
 try{
   firebase.initializeApp(firebaseConfig);
   firebase.database().ref("descargas").on("value",snap=>{
     const arr=[];
     snap.forEach(ch=>{const v=ch.val();if(v&&v.name&&v.url)arr.push([v.name,v.url,v.ts||0])});
     arr.sort((a,b)=>b[2]-a[2]);
-    if(arr.length){render(arr);try{localStorage.setItem("kendy_dl",JSON.stringify(arr))}catch(e){}}
-    else render(DESCARGAS.slice().reverse());
+    render(arr);
+    try{localStorage.setItem("kendy_dl",JSON.stringify(arr))}catch(e){}
   },()=>{});
 }catch(e){}
 </script>
