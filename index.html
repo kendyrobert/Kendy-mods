@@ -58,13 +58,6 @@ const heads=["Mods exclusivos","Sensibilidad perfecta","Paneles listos","Archivo
 const lorem="Aquí encontrarás archivos, mods, paneles y configuraciones para Free Fire y mucho más. Lee con calma cada parte, sigue los pasos y prepara tu dispositivo antes de descargar. Todo el contenido se actualiza con frecuencia para que siempre tengas lo último. Recuerda hacer copia de seguridad y compartir la web con tus amigos para que no se pierdan nada.";
 let part=1, yt=false;
 const $=id=>document.getElementById(id);
-/* ===== AGREGA TUS BOTONES AQUÍ =====
-   Cada línea es un botón (uno debajo de otro): ["Texto del botón","https://tu-enlace"],
-   Para agregar otro, copia una línea y ponla ABAJO de la última: el más nuevo sale arriba en la web. Todas llevan coma al final. */
-const DESCARGAS=[
-  ["⬇ WALLHACK_BERMUDA 13/10/2026","https://www.mediafire.com/file/ouhdf3i2x77dd1w/WALLHACK_BERMUDA.zip/file/"]
-];
-/* ==================================== */
 /* ===== FIREBASE: la lista de descargas se lee de la base de datos (se edita desde /admin) ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyAWr9YM0YAG0mx0SEk3qNEhjeS1MOu_2lg",
@@ -79,12 +72,14 @@ const firebaseConfig = {
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeUrl(u){return /^https?:\/\//i.test(u)?u:"#"}
 function renderDl(list){
-  $("dlList").innerHTML=list.map(b=>`<a class="btn mf dlb" href="${esc(safeUrl(b[1]))}" target="_blank" rel="noopener">${esc(b[0])}</a>`).join("");
+  $("dlList").innerHTML=list.length
+    ? list.map(b=>`<a class="btn mf dlb" href="${esc(safeUrl(b[1]))}" target="_blank" rel="noopener">${esc(b[0])}</a>`).join("")
+    : '<p style="text-align:center;color:#aaa">Aún no hay descargas.</p>';
 }
-/* 1) se muestra al instante lo último guardado en el dispositivo (o la lista de respaldo de arriba) */
+/* 1) se muestra al instante lo último guardado en el dispositivo */
 let cached=null;
 try{cached=JSON.parse(localStorage.getItem("kendy_dl"))}catch(e){}
-renderDl(Array.isArray(cached)&&cached.length?cached:DESCARGAS.slice().reverse());
+renderDl(Array.isArray(cached)?cached:[]);
 /* 2) luego se actualiza en vivo desde Firebase */
 try{
   firebase.initializeApp(firebaseConfig);
@@ -92,8 +87,8 @@ try{
     const arr=[];
     snap.forEach(ch=>{const v=ch.val();if(v&&v.name&&v.url)arr.push([v.name,v.url,v.ts||0])});
     arr.sort((a,b)=>b[2]-a[2]);
-    if(arr.length){renderDl(arr);try{localStorage.setItem("kendy_dl",JSON.stringify(arr))}catch(e){}}
-    else renderDl(DESCARGAS.slice().reverse());
+    renderDl(arr);
+    try{localStorage.setItem("kendy_dl",JSON.stringify(arr))}catch(e){}
   },()=>{});
 }catch(e){}
 
