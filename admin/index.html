@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Kendy mods - Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,Arial,sans-serif;background:#0f1020;color:#eee;line-height:1.5}
+header{background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+header button{width:auto;margin:0;padding:6px 14px;font-size:14px;background:#0008}
+main{max-width:640px;margin:auto;padding:16px}
+h2{color:#ffd54f;margin:20px 0 10px}
+.box{background:#1b1c35;border-radius:14px;padding:16px;margin:14px 0}
+input{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #444;background:#0f1020;color:#fff;font-size:16px}
+button{width:100%;padding:14px;margin:8px 0;border:0;border-radius:10px;font-size:16px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(90deg,#00c853,#00b0ff)}
+button:disabled{background:#555;color:#bbb}
+.item{display:flex;gap:8px;align-items:center;background:#0f1020;border-radius:10px;padding:10px;margin:8px 0}
+.item .t{flex:1;min-width:0}
+.item .t b{display:block;color:#4dd0e1;overflow-wrap:anywhere}
+.item .t small{display:block;color:#999;overflow-wrap:anywhere}
+.item button{width:auto;margin:0;padding:8px 12px;font-size:14px}
+.ed{background:#2979ff}.del{background:#d50000}
+#msg{min-height:22px;color:#ffd54f;margin:6px 0;text-align:center}
+#panel{display:none}
+a{color:#4dd0e1}
+</style>
+</head>
+<body>
+<header><div>⚙ Admin · Kendy mods</div><button id="out" style="display:none">Salir</button></header>
+<main>
+  <div id="login" class="box">
+    <h2>Iniciar sesión</h2>
+    <input id="em" type="email" placeholder="Correo" autocomplete="username">
+    <input id="pw" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button id="go">Entrar</button>
+  </div>
+
+  <div id="panel">
+    <div class="box">
+      <h2 style="margin-top:0">➕ Agregar botón</h2>
+      <input id="nm" placeholder="Nombre del botón (ej: ⬇ WALLHACK 14/10/2026)">
+      <input id="ur" type="url" placeholder="Link de descarga (https://...)">
+      <button id="add">Agregar</button>
+    </div>
+    <h2>📋 Botones actuales (el más nuevo sale arriba)</h2>
+    <div id="list"></div>
+    <p style="margin-top:20px;text-align:center"><a href="/" target="_blank">Ver web principal</a> · <a href="/descapubli" target="_blank">Ver /descapubli</a></p>
+  </div>
+  <p id="msg"></p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAWr9YM0YAG0mx0SEk3qNEhjeS1MOu_2lg",
+  authDomain: "kendy-57bcd.firebaseapp.com",
+  databaseURL: "https://kendy-57bcd-default-rtdb.firebaseio.com",
+  projectId: "kendy-57bcd",
+  storageBucket: "kendy-57bcd.firebasestorage.app",
+  messagingSenderId: "678778497788",
+  appId: "1:678778497788:web:e1459854025fd4a1f98579",
+  measurementId: "G-Z3GD2Y1588"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.database(), ref=db.ref("descargas");
+const $=id=>document.getElementById(id);
+const say=t=>{$("msg").textContent=t};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+let listening=false;
+
+auth.onAuthStateChanged(u=>{
+  $("login").style.display=u?"none":"block";
+  $("panel").style.display=u?"block":"none";
+  $("out").style.display=u?"block":"none";
+  if(u&&!listening){listening=true;ref.on("value",draw,e=>say("Error leyendo datos: "+e.message))}
+});
+
+$("go").onclick=async()=>{
+  say("Entrando...");
+  try{await auth.signInWithEmailAndPassword($("em").value.trim(),$("pw").value);say("")}
+  catch(e){say("No se pudo entrar: "+e.message)}
+};
+$("out").onclick=()=>{auth.signOut();say("")};
+
+$("add").onclick=async()=>{
+  const name=$("nm").value.trim(), url=$("ur").value.trim();
+  if(!name||!/^https?:\/\//i.test(url)){say("Pon un nombre y un link que empiece con http:// o https://");return}
+  $("add").disabled=true;
+  try{
+    await ref.push({name,url,ts:firebase.database.ServerValue.TIMESTAMP});
+    $("nm").value="";$("ur").value="";say("✅ Agregado");
+  }catch(e){say("Error al guardar: "+e.message)}
+  $("add").disabled=false;
+};
+
+function draw(snap){
+  const arr=[];
+  snap.forEach(ch=>{const v=ch.val();if(v)arr.push({id:ch.key,name:v.name||"",url:v.url||"",ts:v.ts||0})});
+  arr.sort((a,b)=>b.ts-a.ts);
+  $("list").innerHTML=arr.length?arr.map(b=>`
+    <div class="item">
+      <div class="t"><b>${esc(b.name)}</b><small>${esc(b.url)}</small></div>
+      <button class="ed" data-e="${esc(b.id)}">Editar</button>
+      <button class="del" data-d="${esc(b.id)}">Borrar</button>
+    </div>`).join(""):'<p style="color:#999">Aún no hay botones. Agrega el primero arriba.</p>';
+  window._items=Object.fromEntries(arr.map(b=>[b.id,b]));
+}
+$("list").onclick=async e=>{
+  const d=e.target.dataset.d, ed=e.target.dataset.e;
+  try{
+    if(d&&confirm("¿Borrar este botón?")){await ref.child(d).remove();say("🗑 Borrado")}
+    if(ed){
+      const it=window._items[ed];
+      const name=prompt("Nombre del botón:",it.name); if(name===null)return;
+      const url=prompt("Link:",it.url); if(url===null)return;
+      if(!name.trim()||!/^https?:\/\//i.test(url.trim())){say("Datos no válidos");return}
+      await ref.child(ed).update({name:name.trim(),url:url.trim()});say("✅ Actualizado");
+    }
+  }catch(err){say("Error: "+err.message)}
+};
+</script>
+</body>
+  </html>
+  
