@@ -7,11 +7,6 @@
 
 <link rel="icon" href="https://i.imgur.com/iU2NjpS.png">
 <link rel="apple-touch-icon" href="https://i.imgur.com/iU2NjpS.png">
-
-<!-- Verificación humana: Cloudflare Turnstile (render explícito) -->
-<script>window.onTurnstile=function(){if(window.cargarTurnstile)window.cargarTurnstile();};</script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstile" async defer></script>
-
 <style>
   :root{
     --bg:#050507;
@@ -166,18 +161,6 @@
 <!-- Aviso de reinicio -->
 <div id="toast" class="hidden">Reinicio por salir de la web</div>
 
-<!-- Verificación al entrar -->
-<div id="verif" class="overlay">
-  <div class="panel">
-    <img class="logo" src="https://i.imgur.com/iU2NjpS.png" alt="">
-    <h2>Verificando</h2>
-    <p>Confirma que eres humano para continuar</p>
-    <div id="ts" style="display:flex;justify-content:center;min-height:65px"></div>
-    <p id="verifMsg"></p>
-    <button id="verifRetry" class="hidden">Reintentar</button>
-  </div>
-</div>
-
 <div id="top" class="hidden">
   <span id="contador">1/6</span>
   <span><span class="dot"></span><b id="nOnline">0</b> en línea</span>
@@ -239,14 +222,10 @@ const ENLACES_CUADROS = ["", ""];
 const YT_URL = "https://youtube.com/@kendymods?si=CKBIsI2QV22YdW5Q";
 const WA_URL = "https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40";
 
-// Verificación humana: pon tu sitekey real de Cloudflare Turnstile (esta es de prueba, siempre pasa)
-const TURNSTILE_SITEKEY = "1x00000000000000000000AA";
-const VERIFY_URL = "";   // opcional: tu endpoint que valida el token (devuelve {success:true})
 const VENTANA_TOQUE = 3000;  // un toque en la página justo antes de salir = abrió un anuncio, no es minimizar
 
 const TOTAL = 6, SEGUNDOS = 15, ESPERA_OCULTA = 5000;
 const VENTANA_SALIDA = 8000;           // salir a un anuncio/YouTube/WhatsApp no cuenta como reinicio
-const VIGENCIA = 30 * 60 * 1000;       // la verificación dura 30 min
 
 const firebaseConfig = window.FIREBASE_CONFIG || {};
 
@@ -581,62 +560,9 @@ function restaurar() {
   verificar();
 }
 
-// ---------- VERIFICACIÓN HUMANA ----------
-window.humanoOk = async function (token) {
-  if (VERIFY_URL) {
-    try {
-      const r = await fetch(VERIFY_URL, {method: "POST", headers: {"Content-Type": "application/json"},
-                                         body: JSON.stringify({token})});
-      const j = await r.json();
-      if (!j.success) { falloVerif("No se pudo verificar. Reintenta."); return; }
-    } catch (e) { falloVerif("Error de conexión al verificar. Reintenta."); return; }
-  }
-  verif = Date.now();
-  paso = 1; fin = false;
-  adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = contando = salioApps = false;
-  guardar();
-  mostrarWeb();
-  pintar();
-};
-
-let tsId = null, tsTimer = null;
-function falloVerif(m) {
-  if (!$("verifMsg")) return;
-  $("verifMsg").textContent = m;
-  $("verifRetry").classList.remove("hidden");
-}
-window.cargarTurnstile = function () {
-  if (!$("ts")) return;                                  // ya verificado
-  if (!window.turnstile) {                               // el script aún no carga
-    clearTimeout(tsTimer);
-    tsTimer = setTimeout(() => { if (!window.turnstile)
-      falloVerif("No se pudo cargar la verificación. Revisa tu conexión o desactiva el DNS/bloqueador."); }, 12000);
-    return;
-  }
-  clearTimeout(tsTimer);
-  try {
-    if (tsId !== null) { turnstile.reset(tsId); return; }
-    tsId = turnstile.render("#ts", {
-      sitekey: TURNSTILE_SITEKEY, theme: "dark",
-      callback: window.humanoOk,
-      "error-callback": () => falloVerif("Error en la verificación. Reintenta."),
-      "expired-callback": () => falloVerif("La verificación expiró. Reintenta."),
-      "timeout-callback": () => falloVerif("Tiempo agotado. Reintenta.")
-    });
-  } catch (e) { falloVerif("No se pudo iniciar la verificación."); }
-};
-$("verifRetry").addEventListener("click", () => {
-  if (window.turnstile && tsId !== null) {
-    $("verifMsg").textContent = ""; $("verifRetry").classList.add("hidden");
-    turnstile.reset(tsId);
-  } else location.reload();
-});
-cargarTurnstile();
-
-if (verif && Date.now() - verif < VIGENCIA) {
-  mostrarWeb();
-  restaurar();
-}
+// La web entra directo (sin verificación humana)
+mostrarWeb();
+restaurar();
 
 // ---------- FLUJO ----------
 // Al regresar de un anuncio / YouTube se marcan como hechos
