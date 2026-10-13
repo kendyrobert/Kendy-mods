@@ -3,675 +3,206 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Descargas</title>
-
-<link rel="icon" href="https://i.imgur.com/iU2NjpS.png">
-<link rel="apple-touch-icon" href="https://i.imgur.com/iU2NjpS.png">
+<title>Kendy mods</title>
 <style>
-  :root{
-    --bg:#050507;
-    --card:#0e0e15;
-    --line:#ffffff14;
-    --txt:#ececf4;
-    --mute:#7d7d92;
-    --a1:#7c5cff;
-    --a2:#2d8bff;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{background:var(--bg)}
-  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-       color:var(--txt);text-align:center;min-height:100vh;overflow-x:hidden}
-
-  /* Fondo negro con brillos suaves */
-  #bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
-      background:radial-gradient(120% 80% at 50% 0%,#0d0d16 0%,#050507 60%)}
-  #bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.28}
-  #bg i:nth-child(1){width:320px;height:320px;background:#6d4aff;top:-90px;left:-110px;animation:flota 14s ease-in-out infinite}
-  #bg i:nth-child(2){width:300px;height:300px;background:#1f7bff;bottom:-110px;right:-100px;animation:flota 17s ease-in-out infinite reverse}
-  @keyframes flota{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
-
-  /* Barra superior */
-  #top{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;
-       align-items:center;padding:14px 18px;font-size:14px;color:var(--mute);letter-spacing:.4px;
-       background:linear-gradient(#050507ee,#05050700)}
-  #contador{color:var(--txt);font-weight:700;letter-spacing:1px}
-  #top b{color:var(--txt);font-weight:700}
-  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3ddc84;
-       margin-right:7px;box-shadow:0 0 10px #3ddc84}
-
-  .hidden{display:none!important}
-
-  /* Pantalla de pasos: cada elemento es su propio cuadro */
-  section{position:relative;z-index:2;padding:76px 18px 120px;max-width:520px;margin:auto}
-  #gate{display:flex;flex-direction:column;gap:18px}
-
-  /* Cuadros de anuncio */
-  .ad{position:relative;display:block;height:120px;border-radius:20px;overflow:hidden;
-      background:linear-gradient(145deg,#14141d,#0b0b11);
-      border:1px solid var(--line);box-shadow:0 12px 32px #0009,inset 0 1px 0 #ffffff0d;
-      transition:transform .2s,border-color .3s,box-shadow .3s}
-  .ad::after{content:"";position:absolute;inset:0;
-      background:linear-gradient(110deg,transparent 35%,#ffffff0a 50%,transparent 65%);
-      transform:translateX(-100%);animation:brillo 3.6s ease-in-out infinite}
-  @keyframes brillo{0%{transform:translateX(-100%)}60%,100%{transform:translateX(100%)}}
-  .ad{cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9a9ab4;font-size:14px;letter-spacing:.5px;user-select:none}
-  .ad:active{transform:scale(.98)}
-  .logo{width:64px;height:64px;border-radius:16px;margin-bottom:10px}
-  #verifMsg{color:#ff9a9a;font-size:14px;min-height:18px}
-  .ad.done{border-color:#7c5cff88;box-shadow:0 0 28px #7c5cff33,0 12px 32px #0009,inset 0 1px 0 #ffffff0d}
-
-  /* Botones */
-  button,.ytbtn{display:block;width:100%;padding:18px 16px;font-size:16px;font-weight:700;
-         letter-spacing:.4px;border:0;border-radius:18px;color:#fff;font-family:inherit;
-         text-decoration:none;cursor:pointer;
-         background:linear-gradient(135deg,var(--a1),var(--a2));
-         box-shadow:0 10px 30px #5a5cff55,inset 0 1px 0 #ffffff40;
-         transition:transform .15s,box-shadow .3s,filter .2s}
-  button:active,.ytbtn:active{transform:scale(.97)}
-  button:disabled{background:#12121a;color:#6d6d82;box-shadow:none;border:1px solid var(--line);
-                  cursor:default}
-  .ytbtn{background:linear-gradient(135deg,#ff4b4b,#c80f2e);
-         box-shadow:0 10px 30px #e5233c55,inset 0 1px 0 #ffffff40}
-  .ytbtn.done{background:#12121a;color:#8a8aa0;box-shadow:none;border:1px solid #7c5cff66}
-
-  .panel{background:#0e0e15ee;border:1px solid var(--line);border-radius:24px;padding:24px;
-         box-shadow:0 20px 50px #000a;backdrop-filter:blur(8px)}
-  h2{margin:0 0 14px;color:var(--txt);font-weight:800;letter-spacing:.3px}
-  p{color:#a9a9bd;line-height:1.5}
-  #grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
-  #grid button{font-size:17px;padding:20px 18px;display:flex;justify-content:space-between;align-items:center;text-align:left;
-               background:linear-gradient(135deg,#ff7a18,#e5233c);box-shadow:0 10px 30px #ff5a1855,inset 0 1px 0 #ffffff40}
-  .card{background:#0e0e15ee;border:1px solid var(--line);border-radius:22px;padding:18px;text-align:left;box-shadow:0 14px 36px #000a}
-  .card b{color:#ffb347;font-size:15px}.card p{margin:8px 0 0;font-size:14px}
-  .card ul,.card ol{margin:10px 0 0;padding-left:20px;color:#b9b9cc;font-size:14px;line-height:1.7}
-  .hero{text-align:center;background:radial-gradient(120% 100% at 50% 0%,#3a1408,#0e0e15 70%);border-color:#ff7a1855}
-  .hero .big{font-size:56px;animation:lat 1.8s ease-in-out infinite}
-  @keyframes lat{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
-  .hero h2{margin:6px 0;background:linear-gradient(90deg,#ffb347,#ff4b4b);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .himg{width:100%;max-height:170px;object-fit:cover;border-radius:16px;margin-bottom:10px}
-  .bar{display:flex;gap:6px;margin-top:14px}.bar i{flex:1;height:7px;border-radius:5px;background:#1d1d29}
-  .bar i.ok{background:#ff7a18}.bar i.now{background:linear-gradient(90deg,#ff7a18,#ff4b4b);box-shadow:0 0 12px #ff7a18}
-  .tick{overflow:hidden;white-space:nowrap;margin-top:12px;font-size:13px;color:#ffb347}
-  .tick span{display:inline-block;padding-left:100%;animation:marq 16s linear infinite}
-  @keyframes marq{to{transform:translateX(-100%)}}
-  html,body{max-width:100%;overflow-x:hidden}
-  body{overflow-wrap:break-word}
-  img,svg,iframe,video{max-width:100%}
-  #gate,#apps,.card,.art,.arthead,.panel{min-width:0;max-width:100%}
-  .gal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
-  .gal div{aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:42px;
-           background:radial-gradient(120% 120% at 30% 0%,#4a1a08,#12121a 75%);border:1px solid #ff7a1844}
-  .gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px}
-  .gal small{display:block;text-align:center;color:#8d8da3;font-size:12px;margin-top:4px}
-  .art{text-align:left;padding:0 2px}
-  .art h3{font-size:23px;line-height:1.25;margin:0 0 10px;color:#fff}
-  .art p{color:#cfcfe0;line-height:1.75;font-size:16px;margin:0 0 12px}
-  .art ul{color:#cfcfe0;line-height:1.75;font-size:16px;padding-left:22px;margin:0}
-  .arthead{text-align:left}
-  .arthead .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.5px;padding-bottom:12px;border-bottom:1px solid #ffffff14}
-  .arthead .brand img{width:34px;height:34px;border-radius:9px}
-  .arthead h1{font-size:30px;line-height:1.2;margin:16px 0 8px;color:#fff}
-  .arthead .meta{color:#8d8da3;font-size:14px}
-  .arthead .hero2{margin-top:14px;border-radius:16px;min-height:140px;display:flex;align-items:center;justify-content:center;font-size:64px;
-                  background:radial-gradient(120% 120% at 30% 0%,#4a1a08,#12121a 75%);border:1px solid #ff7a1844}
-  .plabel{text-align:center;color:#8d8da3;font-size:13px;margin-bottom:6px}
-  #bnrBox{display:flex;justify-content:center;overflow:hidden}
-  #btn{margin-top:14px;margin-bottom:14px}
-  .ad{border-color:#ff7a1866;color:#ffd9b0;font-weight:700;font-size:16px}
-
-  .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-           background:#000000e6;padding:18px}
-  .overlay .panel{max-width:360px;width:100%}
-  #verif{z-index:20}
-  #bloqueo{z-index:30}
-  #bloqueo .panel{border-color:#ff4b4b55}
-  #bloqueoMsg{color:#ff9a9a;min-height:20px;font-size:14px}
-  #toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:40;
-         background:#1a0a0d;color:#ffd0d6;border:1px solid #ff4b4b88;border-radius:16px;
-         padding:18px 24px;font-weight:700;box-shadow:0 0 40px #ff4b4b44;max-width:85%}
-
-  /* Botón redondo de la comunidad (esquina inferior derecha) */
-  .fab{position:fixed;right:18px;bottom:22px;z-index:10;width:68px;height:68px;border-radius:50%;
-       display:flex;flex-direction:column;align-items:center;justify-content:center;
-       text-decoration:none;color:#fff;
-       background:linear-gradient(135deg,#2ee57a,#10a64a);
-       box-shadow:0 8px 28px #12c15a66,inset 0 1px 0 #ffffff55;animation:pulso 2s infinite}
-  .fab svg{width:30px;height:30px;fill:#fff}
-  .fab .lbl{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-top:1px}
-  .fab:active{transform:scale(.92)}
-  @keyframes pulso{0%{box-shadow:0 8px 28px #12c15a66,0 0 0 0 #2ee57a88}
-                   70%{box-shadow:0 8px 28px #12c15a66,0 0 0 18px #2ee57a00}
-                   100%{box-shadow:0 8px 28px #12c15a66,0 0 0 0 #2ee57a00}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,Arial,sans-serif;background:#0f1020;color:#eee;line-height:1.6}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:800}
+header span.p{background:#0008;padding:4px 12px;border-radius:20px;font-size:14px}
+main{max-width:720px;margin:auto;padding:16px}
+h2{margin:12px 0;color:#ffd54f}
+.card{background:#1b1c35;border-radius:14px;padding:14px;margin:16px 0;box-shadow:0 2px 10px #0006}
+.card img{width:100%;border-radius:10px;display:block;margin-bottom:10px;background:#333;min-height:180px;object-fit:cover}
+.card h3{color:#4dd0e1;margin-bottom:6px}
+.act{text-align:center;margin:30px 0 90px}
+button,.btn{display:block;width:100%;max-width:360px;margin:12px auto;padding:16px;border:0;border-radius:12px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;text-align:center;background:linear-gradient(90deg,#00c853,#00b0ff)}
+button:disabled{background:#555;color:#bbb;cursor:not-allowed}
+.yt{background:linear-gradient(90deg,#ff1744,#d50000)}
+.mf{background:linear-gradient(90deg,#2979ff,#7c4dff)}
+#dl{display:none}
+.wa{position:fixed;right:16px;bottom:16px;z-index:10;width:60px;height:60px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px #0008}
+.wa svg{width:34px;height:34px;fill:#fff}
+footer{text-align:center;padding:20px;color:#888;font-size:13px}
+#gate{display:none;position:fixed;inset:0;z-index:99999;background:rgba(5,5,15,.94);align-items:center;justify-content:center;padding:20px}
+.gbox{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:380px;text-align:center}
+.gbox h2{color:#ff5c8a}.gbox p{margin:10px 0}#gmsg{color:#ffd54f;min-height:22px}
 </style>
 </head>
 <body>
-
-<div id="bg"><i></i><i></i></div>
-
-<!-- Aviso de bloqueador de anuncios -->
-<div id="bloqueo" class="overlay hidden">
-  <div class="panel">
-    <h2>Bloqueador detectado</h2>
-    <p>Desactiva tu bloqueador de anuncios o el DNS que bloquea anuncios para usar la web.</p>
-    <p id="bloqueoMsg"></p>
-    <button id="reintentar">Reintentar</button>
-  </div>
+<header><div>🔥 Kendy mods</div><span class="p" id="prog">1/6</span></header>
+<main>
+<div id="steps">
+  <h2 id="title"></h2>
+  <div id="content"></div>
+  <div class="act" id="act"></div>
 </div>
-
-<!-- Aviso de reinicio -->
-<div id="toast" class="hidden">Reinicio por salir de la web</div>
-
-<div id="top" class="hidden">
-  <span id="contador">1/6</span>
-  <span><span class="dot"></span><b id="nOnline">0</b> en línea</span>
+<div id="dl">
+  <h2>✅ ¡Listo! Descarga tus APK y archivos</h2>
+  <div id="dlList"></div>
 </div>
+</main>
+<footer>© Kendy mods</footer>
 
-<section id="gate" class="hidden">
-  <div id="head" class="arthead"></div>
-  <a id="yt" class="ytbtn hidden" href="#" target="_blank" rel="noopener">Ir a seguirme en YouTube</a>
-  <button id="btn" disabled></button>
-  <div id="ads1" class="slot"></div>
-  <div id="info" class="art"></div>
-  <div id="extra" class="art"></div>
-  <div id="artC" class="art"></div>
-  <div id="artD" class="art"></div>
-  <div id="gal" class="art"></div>
-  <div id="bnr1" style="display:none"><div class="plabel">Publicidad</div><div id="bnrBox"></div></div>
-</section>
-
-<section id="apps" class="hidden">
-  <div class="card hero">
-    <div class="big">👑</div>
-    <h2>¡Booyah! Lo lograste</h2>
-    <p>Completaste las 6 partes. Elige tu app y toca el botón para descargarla.</p>
-    <div class="tick"><span>🔥 Gracias por apoyar el canal · 💎 Más apps muy pronto · 🎮 Únete a la comunidad para enterarte primero</span></div>
-  </div>
-  <div class="panel">
-    <h2>📲 Elige tu app</h2>
-    <div id="grid"></div>
-  </div>
-  <div class="card" style="margin-top:18px"><b>📋 Cómo instalar</b>
-    <ol><li>Toca el botón de la app que quieres.</li><li>Espera a que empiece la descarga.</li><li>Abre el archivo y sigue los pasos de instalación.</li></ol>
-  </div>
-  <div class="card" style="margin-top:18px"><b>🔥 Síguenos</b>
-    <p>Novedades y nuevas apps primero en nuestros canales.</p>
-    <a id="lnkYt" class="ytbtn" style="margin-top:12px;text-align:center" href="#" target="_blank" rel="noopener">▶ Canal de YouTube</a>
-    <a id="lnkWa" class="ytbtn" style="margin-top:10px;text-align:center;background:linear-gradient(135deg,#2ee57a,#10a64a);box-shadow:0 10px 30px #12c15a55" href="#" target="_blank" rel="noopener">💬 Canal de WhatsApp</a>
-  </div>
-</section>
-
-<!-- Botón redondo flotante: comunidad de WhatsApp -->
-<a id="fab" class="wa fab hidden" href="#" target="_blank" rel="noopener" aria-label="Únete a la comunidad">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-  <span class="lbl">Únete</span>
+<a class="wa" href="https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40" target="_blank" rel="noopener" aria-label="WhatsApp">
+<svg viewBox="0 0 32 32"><path d="M16 3C9 3 3.4 8.6 3.4 15.5c0 2.3.6 4.4 1.7 6.3L3 29l7.4-2c1.8 1 3.800 1.500 5.600 1.500 7 0 12.600-5.600 12.600-12.500S23 3 16 3zm0 22.800c-1.800 0-3.500-.5-5-1.400l-.4-.2-4.400 1.200 1.200-4.300-.3-.4a10 10 0 0 1-1.500-5.300C5.600 9.900 10.300 5.300 16 5.300s10.400 4.600 10.400 10.200S21.700 25.800 16 25.800zm5.700-7.500c-.3-.2-1.800-.9-2.100-1-.3-.1-.5-.2-.7.200s-.8 1-1 1.200c-.2.200-.4.200-.7.100-.3-.2-1.300-.5-2.500-1.500-.9-.8-1.500-1.800-1.700-2.100-.2-.3 0-.5.100-.6l.5-.5c.1-.2.200-.3.300-.5.100-.2.100-.4 0-.5l-1-2.300c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.100-.8.400-.3.300-1.100 1-1.100 2.600s1.100 3 1.300 3.200c.2.200 2.200 3.400 5.400 4.700 3.200 1.300 3.200.9 3.800.8.600-.1 1.800-.7 2.100-1.500.3-.7.300-1.300.2-1.500-.1-.2-.3-.3-.6-.4z"/></svg>
 </a>
 
-<script src="/firebase-config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-// ---------- CONFIG ----------
-// Puedes tocar cualquiera de estos anuncios, las veces que quieras
-// Monetag: en cada zona pega el dominio que aparece en "Get tag" (https://DOMINIO/tag.min.js)
-const ZONAS = {
-  ventana:  { zone: "12014639", src: "https://al5sm.com/tag.min.js" },  // OnClick (Popunder) -> anuncio por ventana
-  vignette: { zone: "12014841", src: "https://n6wxm.com/vignette.min.js" }   // Vignette Banner   -> automático
-};
-// Opcional: enlace directo de Monetag para cada cuadro (si lo dejas vacío, el cuadro dispara la ventana del popunder)
-const ENLACES_CUADROS = ["", ""];
-const YT_URL = "https://youtube.com/@kendymods?si=CKBIsI2QV22YdW5Q";
-const WA_URL = "https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40";
-
-const VENTANA_TOQUE = 3000;  // un toque en la página justo antes de salir = abrió un anuncio, no es minimizar
-
-const TOTAL = 6, SEGUNDOS = 15, ESPERA_OCULTA = 5000;
-const VENTANA_SALIDA = 8000;           // salir a un anuncio/YouTube/WhatsApp no cuenta como reinicio
-
-const firebaseConfig = window.FIREBASE_CONFIG || {};
-
-const $ = id => document.getElementById(id);
-
-// ---------- ANUNCIOS MONETAG ----------
-const zonaOk = z => z.src && !z.src.includes("PEGA_");
-function cargarAnuncios() {
-  montarBanner();
-  Object.values(ZONAS).forEach(z => {
-    if (!zonaOk(z)) return;
-    const s = document.createElement("script");
-    s.dataset.zone = z.zone; s.src = z.src; s.async = true;
-    document.body.appendChild(s);
-  });
-}
-
-// ---------- DETECTOR DE BLOQUEADOR ----------
-async function hayBloqueador() {
-  // 1) Señuelo que los bloqueadores suelen ocultar
-  const b = document.createElement("div");
-  b.className = "adsbox ad-banner pub_300x250 text-ad";
-  b.style.cssText = "position:absolute;left:-999px;top:0;width:10px;height:10px";
-  b.innerHTML = "&nbsp;";
-  document.body.appendChild(b);
-  await new Promise(r => setTimeout(r, 120));
-  const cs = getComputedStyle(b);
-  const oculto = b.offsetHeight === 0 || cs.display === "none" || cs.visibility === "hidden";
-  b.remove();
-  if (oculto) return true;
-
-  // 2) Prueba de red (detecta DNS y bloqueadores de red)
-  const z = Object.values(ZONAS).find(zonaOk);
-  if (!z) return false;
-  try {
-    await fetch(z.src + "?t=" + Date.now(), {mode: "no-cors", cache: "no-store"});
-  } catch (e) {
-    return navigator.onLine; // si no hay internet, no lo cuenta como bloqueador
-  }
-  return false;
-}
-
-let bloqueado = false;
-async function revisarBloqueo(manual) {
-  const hay = await hayBloqueador();
-  bloqueado = hay;
-  $("bloqueo").classList.toggle("hidden", !hay);
-  if (manual) $("bloqueoMsg").textContent = hay ? "Aún detectamos el bloqueador. Desactívalo e intenta otra vez." : "";
-  return hay;
-}
-$("reintentar").addEventListener("click", async () => {
-  $("reintentar").disabled = true;
-  $("bloqueoMsg").textContent = "Comprobando...";
-  await revisarBloqueo(true);
-  $("reintentar").disabled = false;
-});
-revisarBloqueo();
-setInterval(() => { if (!bloqueado) revisarBloqueo(); }, 10000);
-
-// ---------- FIREBASE ----------
-function iniciarFirebase() {
-  if (!firebaseConfig.databaseURL || firebaseConfig.databaseURL.includes("TU_PROYECTO")) {
-    console.warn("Falta configurar firebase-config.js"); return;
-  }
-  try {
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    if (!sessionStorage.getItem("contado")) {
-      sessionStorage.setItem("contado", "1");
-      const dia = new Date().toISOString().slice(0, 10);
-      db.ref("visitas/" + dia).transaction(v => (v || 0) + 1);
-    }
-    db.ref(".info/connected").on("value", snap => {
-      if (snap.val() === true) {
-        const yo = db.ref("online").push(true);
-        yo.onDisconnect().remove();
-      }
-    });
-    db.ref("online").on("value", snap => {
-      $("nOnline").textContent = snap.numChildren();
-    });
-    db.ref("apps").on("value", snap => {
-      const l = [];
-      snap.forEach(c => { l.push(c.val()); });
-      l.sort((a, b) => (a.orden || 0) - (b.orden || 0));
-      pintarApps(l);
-    });
-  } catch (e) { console.error("Firebase:", e); }
-}
-
-// ---------- ESTADO ----------
-let S = {};
-try { S = JSON.parse(localStorage.getItem("estado")) || {}; } catch (e) {}
-
-let verif    = S.verif || 0;
-let fin      = !!S.fin;          // llegó a las apps
-let paso     = S.paso || 1;
-let adHecho  = !!S.adHecho;      // tocó un anuncio y regresó
-let ytHecho  = !!S.ytHecho;      // fue a YouTube y regresó (solo paso 6)
-let pendAd   = !!S.pendAd;       // salió a un anuncio, falta que regrese
-let pendYt   = !!S.pendYt;       // salió a YouTube, falta que regrese
-let listo    = !!S.listo;        // pasó la espera de 5 s: botón habilitado
-let cuentaOk = !!S.cuentaOk;     // terminó los 15 s: botón para pasar a la siguiente parte
-let contando = !!S.contando;
-let salioApps = !!S.salioApps;   // minimizó/salió estando en las apps
-let timerCuenta = null, timerEspera = null, espFin = 0, avisoPendiente = false;
-let exento = 0;                  // hasta cuándo salir NO cuenta como reinicio (anuncio/YouTube/WhatsApp)
-let ultimoToque = 0, ultimoAd = 0;
-let salida = S.salida || 0;      // última salida permitida (por si la pestaña se recarga)
-addEventListener("pointerdown", () => { ultimoToque = Date.now(); }, true);
-
-function guardar() {
-  try {
-    localStorage.setItem("estado", JSON.stringify({
-      verif, fin, paso, adHecho, ytHecho, pendAd, pendYt, listo, cuentaOk,
-      contando, espera: !!timerEspera, salioApps, espFin, salida
-    }));
-  } catch (e) {}
-}
-
-const btn = $("btn"), yt = $("yt");
-const requiereYT = () => paso === TOTAL;
-
-// Salidas permitidas (anuncio, YouTube, WhatsApp): no reinician
-function permitirSalida() { exento = Date.now() + VENTANA_SALIDA; salida = Date.now(); guardar(); }
-
-// ---------- ENLACES ----------
-document.querySelectorAll(".wa").forEach(a => {
-  a.href = WA_URL;
-  a.addEventListener("click", permitirSalida);
-});
-yt.href = YT_URL;
-
-// ---------- ANUNCIOS (se puede tocar cualquiera, las veces que quieras) ----------
-[0].forEach(i => {
-  const a = document.createElement("div");
-  a.className = "ad";
-  a.setAttribute("role", "button");
-  a.setAttribute("aria-label", "Anuncio");
-  a.textContent = "👆 Toca aquí · Anuncio";
-  a.addEventListener("click", () => {
-    permitirSalida();
-    ultimoAd = Date.now();
-    if (!adHecho) { pendAd = true; guardar(); }   // se acredita al regresar a la web
-    if (ENLACES_CUADROS[i]) window.open(ENLACES_CUADROS[i], "_blank");
-    // si no hay enlace, el popunder de Monetag abre la ventana con este mismo toque
-  });
-  $("ads1").appendChild(a);
-});
-
-yt.addEventListener("click", () => {
-  permitirSalida();
-  if (!ytHecho) { pendYt = true; guardar(); }
-});
-
-// ---------- ARTÍCULO POR PASO ----------
-const IMAGENES_FF = [];   // opcional: enlaces (https://...) de tus imágenes, una por parte
-const BANNER_HTML = ``;   // opcional: pega aquí el código completo de tu banner 300x250 (entre comillas invertidas)
-const PASOS = [
-  {e:"🔥",t:"Cómo empezar bien cada partida",
-   a:["Antes de saltar","Una buena partida empieza antes de tocar el suelo. Revisa tu mochila, mira hacia dónde va la zona segura y elige un punto de aterrizaje que no esté demasiado lleno.","Aterrizar lejos del centro te da tiempo para buscar armas y chaleco sin presión."],
-   b:["Lo básico","Hay hábitos simples que mejoran tus resultados desde la primera partida:",["Aterriza cerca de cobertura","Busca arma y chaleco antes de pelear","Mira el mapa cada pocos segundos"]]},
-  {e:"🪂",t:"Elegir dónde aterrizar",
-   a:["Zonas calientes y zonas tranquilas","Los puntos con muchos edificios suelen traer peleas desde el segundo uno. Si apenas estás aprendiendo, empieza por zonas medianas: hay botín suficiente y menos jugadores.","Con el tiempo irás conociendo cada rincón del mapa y podrás arriesgar más."],
-   b:["Qué tener en cuenta","Antes de decidir tu punto de salto, piensa en lo siguiente:",["La distancia a la zona segura","Si juegas solo o en escuadra","Cuántos jugadores saltan cerca de ti"]]},
-  {e:"💎",t:"Botín: qué recoger primero",
-   a:["Prioridades al saquear","No hace falta llevarse todo. Un arma principal, una secundaria, chaleco, casco y algo para curarte ya te ponen en buena posición.","Revisa tu inventario seguido para no cargar objetos que no usarás."],
-   b:["Orden recomendado","Cuando tengas poco tiempo, sigue este orden:",["Arma principal y munición","Chaleco y casco","Botiquines y objetos de curación"]]},
-  {e:"⚡",t:"Mejorar tu puntería y tus reflejos",
-   a:["Practica con calma","La puntería mejora con repetición. Dedica unos minutos a un campo de entrenamiento y ajusta la sensibilidad hasta que apuntar te resulte cómodo.","Cambios pequeños y constantes funcionan mejor que cambiar todo de golpe."],
-   b:["Hábitos que ayudan","Tu mano y tu cabeza se entrenan juntas:",["Juega sesiones cortas y descansa","Usa siempre la misma sensibilidad","Revisa tus repeticiones para ver errores"]]},
-  {e:"🏆",t:"El final de la partida",
-   a:["Último círculo","Cuando quedan pocos jugadores, la paciencia vale más que la prisa. Busca una posición con cobertura y deja que otros se desgasten primero.","Moverte sin necesidad es la forma más rápida de quedar al descubierto."],
-   b:["Antes del último círculo","Prepárate con tiempo:",["Guarda curación y munición","Elige cobertura dentro de la zona","Escucha pasos y disparos cercanos"]]},
-  {e:"👑",t:"Cuidar tu celular para jugar mejor",
-   a:["Rendimiento y batería","Un celular lleno de apps abiertas rinde peor. Cierra lo que no uses, deja espacio libre en el almacenamiento y baja los gráficos si notas tirones.","Jugar con poca batería o con el equipo muy caliente también afecta tu experiencia."],
-   b:["Antes de jugar","Una revisión rápida te evita problemas:",["Cierra apps en segundo plano","Carga el celular o conéctalo","Usa una conexión estable"]]}
+const TOTAL=6;
+const YT_URL="https://youtube.com/@kendymods?si=2CoZ_dAt9j_QMCiT";
+const titles=["Bienvenido a Kendy mods","Todo para Free Fire","Paneles y configuraciones","Trucos y consejos","Actualizaciones y novedades","Último paso: ¡Sígueme!"];
+const heads=["Mods exclusivos","Sensibilidad perfecta","Paneles listos","Archivos seguros","Siempre actualizado","Comunidad Kendy","Guías fáciles","Soporte","Novedades","Consejos pro"];
+const lorem="Aquí encontrarás archivos, mods, paneles y configuraciones para Free Fire y mucho más. Lee con calma cada parte, sigue los pasos y prepara tu dispositivo antes de descargar. Todo el contenido se actualiza con frecuencia para que siempre tengas lo último. Recuerda hacer copia de seguridad y compartir la web con tus amigos para que no se pierdan nada.";
+let part=1, yt=false;
+const $=id=>document.getElementById(id);
+/* ===== AGREGA TUS BOTONES AQUÍ =====
+   Cada línea es un botón: ["Texto del botón","https://tu-enlace"]
+   Para otra categoría, copia un bloque {titulo, texto, botones} */
+const DESCARGAS=[
+  {titulo:"Free Fire",texto:"Archivos y mods para Free Fire.",botones:[
+    ["⬇ Descargar Free Fire (APK)","https://www.mediafire.com/"],
+    ["⬇ Descargar Panel","https://www.mediafire.com/"],
+    ["⬇ Descargar Sensibilidad","https://www.mediafire.com/"],
+    ["⬇ Más archivos","https://www.mediafire.com/"]
+  ]},
+  {titulo:"Otros mods",texto:"Más apps y archivos.",botones:[
+    ["⬇ Descargar App","https://www.mediafire.com/"]
+  ]}
 ];
-// Orden de los elementos en cada parte (el botón nunca queda pegado a un anuncio)
-const LAYOUTS = [
-  ["head","btn","artA","ads1","artB","artC","bnr1","artD","gal"],
-  ["head","ads1","artA","artB","btn","artC","bnr1","artD","gal"],
-  ["head","artA","bnr1","artB","artC","btn","artD","ads1","gal"],
-  ["head","bnr1","artA","ads1","artB","artC","artD","btn","gal"],
-  ["head","artA","ads1","artB","bnr1","artC","artD","gal","btn"],
-  ["head","yt","artA","ads1","artB","artC","btn","artD","bnr1","gal"]
-];
-// Textos extra que rotan entre las partes
-const POOL = [
-  ["Jugar en equipo","Una escuadra coordinada gana más partidas que cuatro jugadores sueltos. Repartan roles: uno abre las peleas, otro cubre y otro se encarga de curar y revivir.","Hablar poco pero claro ayuda más que hablar mucho: avisa dónde ves al enemigo y cuántos son."],
-  ["Sensibilidad y controles","Cada persona necesita una sensibilidad distinta. Empieza con valores medios y sube o baja de a poco hasta que puedas girar rápido sin pasarte del objetivo.","También conviene acomodar los botones para alcanzarlos sin mover demasiado los dedos."],
-  ["Gráficos y rendimiento","Si tu celular se calienta o se traba, bajar la calidad gráfica suele ayudar más de lo que parece. Es mejor jugar fluido que bonito.","Cerrar otras aplicaciones y liberar almacenamiento también mejora la fluidez."],
-  ["Comunicación con tu escuadra","Los mensajes cortos funcionan mejor: dirección, distancia y cantidad de enemigos. Evita discutir en plena pelea.","Después de la partida, comenten qué pasó y qué pueden mejorar para la siguiente."],
-  ["Errores comunes","Correr al descubierto, pelear sin curarte y saquear mientras hay enemigos cerca son errores que casi todos cometen al principio.","La buena noticia es que se corrigen con atención: antes de moverte, mira alrededor."],
-  ["Usar bien la cobertura","Paredes, rocas y vehículos te protegen, pero solo si te mueves de una a otra con cuidado. Asómate, dispara y vuelve a esconderte.","Cambia de lado de la cobertura para que el rival no sepa por dónde saldrás."],
-  ["Administrar el inventario","Un inventario ordenado te ahorra segundos que valen oro en una pelea. Lleva solo lo que vas a usar y descarta lo demás.","Equilibra la munición entre tus armas y guarda siempre algo para curarte."],
-  ["Descansar para mejorar","Jugar horas seguidas cansa la vista y la mente, y se nota en tu puntería. Haz pausas, toma agua y estira las manos.","Volver con la cabeza fresca suele dar mejores resultados que insistir cansado."]
-];
-let bannerListo = false;
-function montarBanner() {
-  if (!BANNER_HTML.trim()) return;
-  const box = $("bnrBox"), t = document.createElement("div");
-  t.innerHTML = BANNER_HTML;
-  [...t.childNodes].forEach(n => {
-    if (n.tagName === "SCRIPT") {
-      const sc = document.createElement("script");
-      [...n.attributes].forEach(a => sc.setAttribute(a.name, a.value));
-      sc.text = n.text; box.appendChild(sc);
-    } else box.appendChild(n.cloneNode(true));
-  });
-  bannerListo = true; pintarDeco();
-}
-function pintarDeco() {
-  const P = PASOS[paso - 1], L = LAYOUTS[paso - 1];
-  const hero = IMAGENES_FF.length
-    ? '<img class="himg" src="' + IMAGENES_FF[(paso - 1) % IMAGENES_FF.length] + '" alt="" style="margin-top:14px">'
-    : '<div class="hero2">' + P.e + '</div>';
-  let barra = "";
-  for (let i = 1; i <= TOTAL; i++) barra += '<i class="' + (i < paso ? "ok" : i === paso ? "now" : "") + '"></i>';
-  $("head").innerHTML = '<div class="brand"><img src="https://i.imgur.com/iU2NjpS.png" alt="">KENDY MODS</div>' +
-    '<h1>' + P.t + '</h1><div class="meta">⏱ 3 min · Parte ' + paso + ' de ' + TOTAL + ' · Admin</div>' + hero + '<div class="bar">' + barra + '</div>';
-  $("info").innerHTML = "<h3>" + P.a[0] + "</h3><p>" + P.a[1] + "</p><p>" + P.a[2] + "</p>";
-  $("extra").innerHTML = "<h3>" + P.b[0] + "</h3><p>" + P.b[1] + "</p><ul>" + P.b[2].map(x => "<li>" + x + "</li>").join("") + "</ul>";
-  [["artC", paso * 2], ["artD", paso * 2 + 1]].forEach(([id, n]) => {
-    const q = POOL[n % POOL.length];
-    $(id).innerHTML = "<h3>" + q[0] + "</h3><p>" + q[1] + "</p><p>" + q[2] + "</p>";
-  });
-  const caps = ["Estrategia", "Botín", "Victoria"], ems = ["🎯", "💎", "🏆"];
-  let g = "";
-  for (let k = 0; k < 3; k++) {
-    g += "<figure style='margin:0'>" + (IMAGENES_FF.length
-      ? "<img src='" + IMAGENES_FF[(paso + k) % IMAGENES_FF.length] + "' alt=''>"
-      : "<div>" + ems[k] + "</div>") + "<small>" + caps[k] + "</small></figure>";
+/* ==================================== */
+$("dlList").innerHTML=DESCARGAS.map(c=>`<div class="card"><h3>${c.titulo}</h3><p>${c.texto}</p>${c.botones.map(b=>`<a class="btn mf" href="${b[1]}" target="_blank" rel="noopener">${b[0]}</a>`).join("")}</div>`).join("");
+
+const KEY="kendy_state";
+let st={part:1,stage:"cd1",end:0}, timer=null, shown=0;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.part>=1&&x.part<=TOTAL)st=x}catch(e){}}
+function reset(){st={part:1,stage:"cd1",end:0};save();}
+
+function buildContent(){
+  $("prog").textContent=st.part+"/"+TOTAL;
+  $("title").textContent=titles[st.part-1];
+  let h="";
+  for(let i=0;i<9;i++){
+    h+=`<div class="card"><img loading="lazy" src="https://picsum.photos/seed/kendy${st.part}-${i}/700/400" alt=""><h3>${heads[(i+st.part)%heads.length]}</h3><p>${lorem}</p><p>${lorem}</p></div>`;
   }
-  $("gal").innerHTML = "<h3>Galería</h3><div class='gal'>" + g + "</div>";
-  const el = {head: $("head"), artA: $("info"), artB: $("extra"), artC: $("artC"), artD: $("artD"), gal: $("gal"), bnr1: $("bnr1"), ads1: $("ads1"), btn: btn, yt: yt};
-  Object.keys(el).forEach(k => {
-    const i = L.indexOf(k);
-    if (i >= 0) el[k].style.order = i;
-    if (k === "yt") return;                       // YouTube lo muestra/oculta su propia lógica
-    el[k].style.display = (i < 0 || (k === "bnr1" && !bannerListo)) ? "none" : "";
-  });
+  $("content").innerHTML=h;
+  window.scrollTo(0,0);
+  shown=st.part;
 }
-
-// ---------- PINTAR ----------
-function pintarMarcas() {
-  document.querySelectorAll("#gate .slot .ad").forEach(a => a.classList.toggle("done", adHecho));
-  yt.classList.toggle("hidden", !requiereYT());
-  yt.classList.toggle("done", ytHecho);
-  yt.textContent = ytHecho ? "YouTube verificado" : "Ir a seguirme en YouTube";
+function btn(text,cls,fn,disabled){
+  const b=document.createElement("button");
+  b.textContent=text;b.className=cls||"";b.disabled=!!disabled;
+  if(fn)b.onclick=fn;
+  $("act").innerHTML="";$("act").appendChild(b);
+  return b;
 }
-
-function pintarBtn() {
-  if (cuentaOk) {
-    btn.disabled = false;
-    btn.textContent = "Continuar";
-  } else if (contando) {
-    btn.disabled = true;               // el texto lo maneja la cuenta regresiva
-  } else if (timerEspera) {
-    btn.disabled = true;
-    btn.textContent = "Espera " + Math.max(1, Math.ceil((espFin - Date.now()) / 1000)) + "s...";
-  } else if (listo) {
-    btn.disabled = false;
-    btn.textContent = "Continuar";
-  } else {
-    btn.disabled = true;
-    btn.textContent = requiereYT()
-      ? "Toca el cuadro de abajo y sigue en YouTube"
-      : "Toca el cuadro de abajo para continuar";
-  }
-}
-
-function pintar() {
-  $("contador").textContent = paso + "/" + TOTAL;
-  pintarDeco();
-  pintarMarcas();
-  pintarBtn();
-}
-
-function aviso() {
-  const t = $("toast");
-  t.classList.remove("hidden");
-  setTimeout(() => t.classList.add("hidden"), 2000);
-}
-
-function reiniciar() {
-  clearInterval(timerCuenta); timerCuenta = null;
-  clearTimeout(timerEspera); timerEspera = null;
-  contando = false; paso = 1; fin = false;
-  adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = false;
-  salioApps = false;
-  guardar();
-  $("apps").classList.add("hidden");
-  $("gate").classList.remove("hidden");
-  pintar();
-}
-
-function mostrarApps() {
-  $("gate").classList.add("hidden");
-  $("apps").classList.remove("hidden");
-  $("contador").textContent = "";
-}
-
-function mostrarWeb() {
-  const v = $("verif");
-  if (v) v.remove();
-  $("top").classList.remove("hidden");
-  $("gate").classList.remove("hidden");
-  $("fab").classList.remove("hidden");
-  iniciarFirebase();
-  cargarAnuncios();
-}
-
-function restaurar() {
-  const deAnuncio = salida && Date.now() - salida < 600000;   // la pestaña se recargó mientras veía un anuncio
-  if (fin) {
-    if (!deAnuncio) { reiniciar(); aviso(); }   // volvió de una descarga o cerró la web
-    else mostrarApps();
-    return;
-  }
-  const progreso = paso > 1 || adHecho || ytHecho || pendAd || pendYt || listo || cuentaOk || contando || S.espera;
-  if (progreso) {
-    if (!deAnuncio) { reiniciar(); aviso(); return; }       // cerró / salió de la web
-    if (contando) { contando = false; cuentaOk = true; guardar(); }
-    else if (S.espera) {
-      espFin = S.espFin || 0;
-      if (Date.now() >= espFin) finEspera();
-      else timerEspera = setTimeout(finEspera, espFin - Date.now());
-    }
-  }
-  pintar();
-  verificar();
-}
-
-// La web entra directo (sin verificación humana)
-mostrarWeb();
-restaurar();
-
-// ---------- FLUJO ----------
-// Al regresar de un anuncio / YouTube se marcan como hechos
-function verificar() {
-  if (document.visibilityState !== "visible") return;
-  revisarEspera();
-  if (!pendAd && !pendYt) return;
-  if (pendAd) { adHecho = true; pendAd = false; }
-  if (pendYt) { ytHecho = true; pendYt = false; }
-  guardar();
-  pintarMarcas();
-  revisarListo();
-}
-
-// Cuando todo lo requerido está hecho, espera 5 s y habilita el botón
-function finEspera() {
-  clearTimeout(timerEspera); timerEspera = null;
-  listo = true;
-  guardar();
-  pintarBtn();
-}
-function revisarEspera() {
-  if (timerEspera && Date.now() >= espFin) finEspera();
-}
-function revisarListo() {
-  if (listo || timerEspera || contando || cuentaOk) return;
-  if (!adHecho) return;
-  if (requiereYT() && !ytHecho) return;
-  espFin = Date.now() + ESPERA_OCULTA;
-  timerEspera = setTimeout(finEspera, ESPERA_OCULTA);
-  guardar();
-  pintarBtn();
-}
-// Por si el navegador congela el temporizador en segundo plano
-setInterval(() => { revisarEspera(); if (timerEspera) pintarBtn(); }, 250);
-
-// Reinicia solo si sales de la web 15 s o más (aunque dejes la pestaña abierta) o si la cierras y la reabres.
-// Ir a ver un anuncio, a YouTube o a WhatsApp no cuenta.
-const FUERA_MAX = 15000;
-let ocultoDesde = 0, exentoSalida = false;
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") {
-    const enApps = !$("apps").classList.contains("hidden");
-    ocultoDesde = Date.now();
-    exentoSalida = Date.now() < exento || (!enApps && Date.now() - ultimoToque < VENTANA_TOQUE);
-  } else {
-    const lejos = ocultoDesde && !exentoSalida && Date.now() - ocultoDesde >= FUERA_MAX;
-    const hubo = paso > 1 || fin || adHecho || ytHecho || listo || cuentaOk || contando || !!timerEspera;
-    ocultoDesde = 0; exento = 0; salida = 0; guardar();
-    if (lejos) { reiniciar(); if (hubo) aviso(); return; }
-    verificar();
-  }
-});
-addEventListener("focus", verificar);
-addEventListener("pageshow", verificar);
-
-btn.addEventListener("click", () => {
-  // 2º paso: terminó la cuenta regresiva, pasa a la siguiente parte
-  if (cuentaOk) { siguiente(); return; }
-  if (!listo || contando) return;
-
-  // 1º paso: inicia la cuenta regresiva de 15 s
-  contando = true;
-  guardar();
-  btn.disabled = true;
-  const finCuenta = Date.now() + SEGUNDOS * 1000;
-  const tick = () => {
-    const t = Math.ceil((finCuenta - Date.now()) / 1000);
-    if (t > 0) { btn.textContent = `Espera ${t}s...`; return; }
-    clearInterval(timerCuenta); timerCuenta = null;
-    contando = false;
-    cuentaOk = true;
-    guardar();
-    pintarBtn();      // aparece el botón "Continuar"
+/* cuenta regresiva basada en la hora real: no se reinicia aunque salgas a un anuncio o la página se recargue */
+function runCd(done){
+  if(!st.end){st.end=Date.now()+10000;save();}
+  const b=btn("","",null,true);
+  const tick=()=>{
+    const r=Math.ceil((st.end-Date.now())/1000);
+    if(r<=0){clearInterval(timer);done();}
+    else b.textContent="Espera "+r+"s";
   };
-  tick();
-  timerCuenta = setInterval(tick, 250);
-});
+  if(Math.ceil((st.end-Date.now())/1000)<=0){done();return;}
+  tick();timer=setInterval(tick,250);
+}
+function next(stage,end){st.stage=stage;st.end=end||0;save();go();}
 
-function siguiente() {
-  if (paso >= TOTAL) {
-    fin = true;
-    guardar();
-    mostrarApps();
+function go(){
+  clearInterval(timer);
+  if(st.stage==="dl"){
+    $("steps").style.display="none";$("dl").style.display="block";$("prog").textContent="✔";
+    const chk=()=>{if(Date.now()>=st.end){reset();go();return true}return false};
+    if(!chk())timer=setInterval(chk,500);
     return;
   }
-  paso++;
-  adHecho = ytHecho = pendAd = pendYt = listo = cuentaOk = false;
-  guardar();
-  pintar();
+  $("dl").style.display="none";$("steps").style.display="block";
+  if(shown!==st.part)buildContent();
+  else $("prog").textContent=st.part+"/"+TOTAL;
+  if(st.stage==="cd1")runCd(()=>next("ready"));
+  else if(st.stage==="ready")btn("👉 Toca aquí","",()=>next("cd2"));
+  else if(st.stage==="cd2")runCd(()=>next("final"));
+  else if(st.stage==="final"){
+    if(st.part<TOTAL)btn("Continuar ➜","",()=>{st.part++;next("cd1");});
+    else btn("▶ Seguir en YouTube","yt",()=>{
+      let left=false;
+      const clean=()=>{document.removeEventListener("visibilitychange",chk);window.removeEventListener("focus",chk);window.removeEventListener("blur",out)};
+      const out=()=>{left=true};
+      const chk=()=>{
+        if(document.visibilityState==="hidden"){left=true;return}
+        if(left){clean();next("ytready");}
+      };
+      st.stage="yt";save();
+      window.addEventListener("blur",out);
+      document.addEventListener("visibilitychange",chk);
+      window.addEventListener("focus",chk);
+      window.open(YT_URL,"_blank");
+    });
+  }
+  else if(st.stage==="yt")next("ytready");
+  else if(st.stage==="ytready")btn("✅ Ver descargas","",()=>next("dl",Date.now()+20000));
 }
-
-// ---------- APPS (se editan en /edit) ----------
-function pintarApps(lista) {
-  const g = $("grid");
-  g.innerHTML = "";
-  lista.forEach(a => {
-    if (!a.nombre || !a.url) return;
-    const b = document.createElement("button");
-    const n = document.createElement("span"); n.textContent = "📲  " + a.nombre;
-    const f = document.createElement("span"); f.textContent = "⬇";
-    b.append(n, f);
-    b.onclick = () => window.open(a.url, "_blank");
-    g.appendChild(b);
-  });
+/* ===== SI SALES DE LA WEB 15 SEGUNDOS O MÁS, SE REINICIA TODO (excepto al ir a YouTube) ===== */
+const AWAY=15000;
+function markAway(){if(st.stage==="yt")return;try{localStorage.setItem("kendy_away",String(Date.now()))}catch(e){}}
+function checkAway(){
+  let t=0;
+  try{t=+localStorage.getItem("kendy_away")||0;localStorage.removeItem("kendy_away")}catch(e){}
+  if(t&&Date.now()-t>=AWAY&&st.stage!=="yt"){reset();shown=0;go();}
 }
-$("lnkYt").href = YT_URL; $("lnkWa").href = WA_URL;
+document.addEventListener("visibilitychange",()=>{document.visibilityState==="hidden"?markAway():checkAway()});
+window.addEventListener("pagehide",markAway);
+load();
+if(st.stage==="yt")st.stage="ytready";
+checkAway();
+go();
 
-pintar();
+/* ===== DETECTOR DE BLOQUEO DE ANUNCIOS / DNS ===== */
+const AD_URL="https://al5sm.com/tag.min.js";
+const gate=document.createElement("div");
+gate.id="gate";
+gate.innerHTML='<div class="gbox"><h2>🚫 Bloqueo detectado</h2><p>Detectamos un bloqueador de anuncios, un DNS privado que los bloquea o que no hay internet. Desactívalo para esta página y toca Reintentar para continuar.</p><p id="gmsg"></p><button id="gretry">🔄 Reintentar</button></div>';
+document.body.appendChild(gate);
+let checking=false, wasBlocked=false;
+async function isBlocked(){
+  const bait=document.createElement("div");
+  bait.className="adsbox ad-banner pub_300x250";
+  bait.style.cssText="position:absolute;left:-999px;top:0;width:10px;height:10px";
+  document.body.appendChild(bait);
+  await new Promise(r=>setTimeout(r,120));
+  const cs=getComputedStyle(bait);
+  const hid=bait.offsetHeight===0||cs.display==="none"||cs.visibility==="hidden";
+  bait.remove();
+  if(hid)return true;
+  try{await fetch(AD_URL+"?t="+Date.now(),{mode:"no-cors",cache:"no-store"});return false;}
+  catch(e){return true;}
+}
+let epoch=0, graceUntil=0;
+/* al salir/volver (anuncio) se ignoran las verificaciones en curso y se espera 3s */
+document.addEventListener("visibilitychange",()=>{epoch++;graceUntil=Date.now()+3000;});
+async function check(manual){
+  if(checking)return;
+  if(!manual&&(document.visibilityState!=="visible"||Date.now()<graceUntil))return;
+  checking=true;
+  if(!document.body.contains(gate))document.body.appendChild(gate);
+  const e0=epoch;
+  let b=await isBlocked();
+  if(b){await new Promise(r=>setTimeout(r,1500));b=await isBlocked();}   /* hay que confirmarlo 2 veces */
+  if(epoch!==e0||document.visibilityState!=="visible"){checking=false;return;}  /* si se fue a un anuncio, se ignora */
+  gate.style.display=b?"flex":"none";
+  document.body.style.overflow=b?"hidden":"";
+  if(b&&!wasBlocked){reset();shown=0;go();}   /* bloqueo detectado: todo vuelve a 1/6 */
+  if(!b&&wasBlocked){reset();shown=0;go();}   /* ya sin bloqueo: empieza de cero */
+  wasBlocked=b;
+  $("gmsg").textContent=(b&&manual)?"Todavía se detecta el bloqueo. Intenta de nuevo.":"";
+  checking=false;
+}
+$("gretry").onclick=()=>{$("gmsg").textContent="Verificando...";check(true);};
+check();
+setInterval(check,4000);
 </script>
+<script>(function(s){s.dataset.zone='12014639',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </body>
 </html>
