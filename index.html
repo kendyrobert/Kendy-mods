@@ -177,13 +177,31 @@ window.addEventListener("pagehide",markAway);
 load();
 if(st.stage==="yt")st.stage="ytready";
 checkAway();
-function loadAds(){
+/* ===== ANUNCIOS CONTINUOS: el tag se vuelve a cargar en cada toque para que nunca se agoten ===== */
+let lastAd=0, adEl=null;
+function loadAds(force){
   if(st.stage==="dl")return;   /* en la sección de descargas NO se cargan anuncios */
+  const now=Date.now();
+  if(!force&&now-lastAd<800)return;   /* evita cargas duplicadas por toques seguidos */
+  lastAd=now;
+  if(adEl&&adEl.parentNode)adEl.parentNode.removeChild(adEl);
   const a=document.createElement("script");
-  a.dataset.zone="12014639";a.src="https://al5sm.com/tag.min.js";
+  a.dataset.zone="12014639";a.async=true;
+  a.src="https://al5sm.com/tag.min.js";
   document.body.appendChild(a);
+  adEl=a;
 }
-loadAds();
+/* precarga: conexión anticipada al servidor de anuncios para que carguen rápido */
+["preconnect","dns-prefetch"].forEach(rel=>{
+  const l=document.createElement("link");l.rel=rel;l.href="https://al5sm.com";
+  if(rel==="preconnect")l.crossOrigin="";
+  document.head.appendChild(l);
+});
+/* cada toque en cualquier parte (botones incluidos) prepara un anuncio nuevo */
+document.addEventListener("pointerdown",()=>loadAds(),true);
+/* refresco automático cada 20s mientras la página está visible */
+setInterval(()=>{if(document.visibilityState==="visible")loadAds(true)},20000);
+loadAds(true);
 go();
 
 /* ===== DETECTOR DE BLOQUEO DE ANUNCIOS / DNS ===== */
