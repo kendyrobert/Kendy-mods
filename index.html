@@ -28,7 +28,8 @@ footer{text-align:center;padding:20px;color:#888;font-size:13px}
 .gbox h2{color:#ff5c8a}.gbox p{margin:10px 0}#gmsg{color:#ffd54f;min-height:22px}
 .dlb{margin:20px auto}
 /* espacio de anuncio de tamaño FIJO: lo que cargue dentro no empuja ni mueve el resto de la página */
-.adslot{height:100px;overflow:hidden;contain:strict;margin:16px 0;text-align:center}
+.adslot{height:100px;overflow:hidden;contain:strict;margin:16px 0;text-align:center;display:flex;align-items:center;justify-content:center;padding:0 16px;border:2px dashed #ff3d71;border-radius:14px;background:#1b1c35;color:#ffd54f;font-weight:800;font-size:17px;line-height:1.3;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.adslot::before{content:"📢 Publicidad · Tu toque apoya a Kendy mods"}
 /* la barra de scroll siempre ocupa su sitio: si un anuncio bloquea/desbloquea el scroll, la página no salta */
 html{scrollbar-gutter:stable;overflow-anchor:none;-webkit-text-size-adjust:100%}
 </style>
@@ -97,10 +98,10 @@ try{
 }catch(e){}
 
 const KEY="kendy_state";
-let st={part:1,stage:"cd1",end:0}, timer=null, shown=0;
+let st={part:1,stage:"tap",end:0}, timer=null, shown=0;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
-function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.part>=1&&x.part<=TOTAL)st=x}catch(e){}}
-function reset(){st={part:1,stage:"cd1",end:0};save();}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.part>=1&&x.part<=TOTAL){st=x;if(["cd1","ready","cd2","ad"].includes(st.stage)){st.stage="tap";st.end=0}}}catch(e){}}
+function reset(){st={part:1,stage:"tap",end:0};save();}
 
 function buildContent(){
   $("prog").textContent=st.part+"/"+TOTAL;
@@ -125,7 +126,7 @@ function btn(text,cls,fn,disabled){
 }
 /* cuenta regresiva basada en la hora real: no se reinicia aunque salgas a un anuncio o la página se recargue */
 function runCd(done){
-  if(!st.end){st.end=Date.now()+10000;save();}
+  if(!st.end){st.end=Date.now()+15000;save();}
   const b=btn("","",null,true);
   const tick=()=>{
     const r=Math.ceil((st.end-Date.now())/1000);
@@ -136,9 +137,31 @@ function runCd(done){
   tick();timer=setInterval(tick,250);
 }
 function next(stage,end){st.stage=stage;st.end=end||0;save();go();}
+/* tocar una caja de "Publicidad" (arriba, en medio o abajo, cualquiera) inicia la verificación */
+const VERIFY_MS=3000, COUNT_MS=15000, AD_WAIT_MS=8000;
+$("content").addEventListener("click",e=>{
+  if(st.stage==="tap"&&e.target.closest&&e.target.closest(".adslot"))next("ad");
+});
+/* etapa "ad": se espera a que la persona SALGA a un anuncio (la pestaña se oculta) y REGRESE.
+   Al regresar: "Verificando..." y después empieza la cuenta de 15 s.
+   Si en 8 s no salió a ningún anuncio, se vuelve a pedir que toque una caja. */
+let adLeft=false, adTimer=null, adHandler=null;
+function stopAdWatch(){
+  clearTimeout(adTimer);adTimer=null;
+  if(adHandler){document.removeEventListener("visibilitychange",adHandler);adHandler=null}
+}
+function startAdWatch(){
+  stopAdWatch();adLeft=false;
+  adHandler=()=>{
+    if(document.visibilityState==="hidden"){adLeft=true;clearTimeout(adTimer);adTimer=null;return}
+    if(adLeft&&document.visibilityState==="visible"){stopAdWatch();next("verify",Date.now()+VERIFY_MS)}
+  };
+  document.addEventListener("visibilitychange",adHandler);
+  adTimer=setTimeout(()=>{if(!adLeft){stopAdWatch();next("tap")}},AD_WAIT_MS);
+}
 
 function go(){
-  clearInterval(timer);
+  clearInterval(timer);stopAdWatch();
   if(st.stage==="dl"){
     $("steps").style.display="none";$("dl").style.display="block";$("prog").textContent="✔";
     const chk=()=>{if(Date.now()>=st.end){clearInterval(timer);reset();location.reload();return true}return false};
@@ -148,11 +171,19 @@ function go(){
   $("dl").style.display="none";$("steps").style.display="block";
   if(shown!==st.part)buildContent();
   else $("prog").textContent=st.part+"/"+TOTAL;
-  if(st.stage==="cd1")runCd(()=>next("ready"));
-  else if(st.stage==="ready")btn("👉 Toca aquí","",()=>next("cd2"));
-  else if(st.stage==="cd2")runCd(()=>next("final"));
+  if(st.stage==="tap")btn("👆 Toca una caja de Publicidad para continuar","",null,true);
+  else if(st.stage==="ad"){
+    btn("👀 Entra al anuncio y vuelve aquí","",null,true);
+    startAdWatch();
+  }
+  else if(st.stage==="verify"){
+    btn("⏳ Verificando...","",null,true);
+    const chk=()=>{if(Date.now()>=st.end){clearInterval(timer);next("cd",Date.now()+COUNT_MS);return true}return false};
+    if(!chk())timer=setInterval(chk,250);
+  }
+  else if(st.stage==="cd")runCd(()=>next("final"));
   else if(st.stage==="final"){
-    if(st.part<TOTAL)btn("Continuar ➜","",()=>{st.part++;next("cd1");});
+    if(st.part<TOTAL)btn("Continuar ➜","",()=>{st.part++;next("tap");});
     else btn("▶ Seguir en YouTube","yt",()=>{
       let left=false;
       const clean=()=>{document.removeEventListener("visibilitychange",chk);window.removeEventListener("focus",chk);window.removeEventListener("blur",out)};
@@ -173,11 +204,11 @@ function go(){
 }
 /* ===== SI SALES DE LA WEB 15 SEGUNDOS O MÁS, SE REINICIA TODO (excepto al ir a YouTube) ===== */
 const AWAY=15000;
-function markAway(){if(st.stage==="yt")return;try{localStorage.setItem("kendy_away",String(Date.now()))}catch(e){}}
+function markAway(){if(st.stage==="yt"||st.stage==="ad")return;try{localStorage.setItem("kendy_away",String(Date.now()))}catch(e){}}
 function checkAway(){
   let t=0;
   try{t=+localStorage.getItem("kendy_away")||0;localStorage.removeItem("kendy_away")}catch(e){}
-  if(t&&Date.now()-t>=AWAY&&st.stage!=="yt"){const d=st.stage==="dl";reset();if(d){location.reload();return;}shown=0;go();}
+  if(t&&Date.now()-t>=AWAY&&st.stage!=="yt"&&st.stage!=="ad"){const d=st.stage==="dl";reset();if(d){location.reload();return;}shown=0;go();}
 }
 document.addEventListener("visibilitychange",()=>{document.visibilityState==="hidden"?markAway():checkAway()});
 window.addEventListener("pagehide",markAway);
@@ -189,8 +220,18 @@ const ADS=[
   {zone:"12014639",src:"https://al5sm.com/tag.min.js"},
   {zone:"12014927",src:"https://nap5k.com/tag.min.js"}
 ];
+/* Push Notifications: se carga UNA sola vez por visita (no en cada parte) */
+let pushLoaded=false;
+function loadPush(){
+  if(pushLoaded)return;pushLoaded=true;
+  const s=document.createElement("script");
+  s.src="https://5gvci.com/act/files/tag.min.js?z=12034404";
+  s.setAttribute("data-cfasync","false");s.async=true;
+  document.body.appendChild(s);
+}
 function fillAdSlots(){
   if(st.stage==="dl")return;   /* en la sección de descargas NO se cargan anuncios */
+  loadPush();
   const order={top:0,mid:1,bottom:0};   /* arriba: anuncio 1, en medio: anuncio 2, abajo: anuncio 1 */
   document.querySelectorAll("#content .adslot").forEach(slot=>{
     const ad=ADS[order[slot.dataset.pos]];
