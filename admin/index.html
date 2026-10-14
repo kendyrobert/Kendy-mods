@@ -20,8 +20,9 @@ button:disabled{background:#555;color:#bbb}
 .item .t{flex:1;min-width:0}
 .item .t b{display:block;color:#4dd0e1;overflow-wrap:anywhere}
 .item .t small{display:block;color:#999;overflow-wrap:anywhere}
+.item .t code{display:block;color:#ffd54f;font-size:18px;letter-spacing:1px;font-family:ui-monospace,Menlo,monospace}
 .item button{width:auto;margin:0;padding:8px 12px;font-size:14px}
-.ed{background:#2979ff}.del{background:#d50000}
+.ed{background:#2979ff}.del{background:#d50000}.cp{background:#7c4dff}
 #msg{min-height:22px;color:#ffd54f;margin:6px 0;text-align:center}
 #panel{display:none}
 a{color:#4dd0e1}
@@ -38,6 +39,14 @@ a{color:#4dd0e1}
   </div>
 
   <div id="panel">
+    <div class="box">
+      <h2 style="margin-top:0">🔑 Códigos de un solo uso</h2>
+      <input id="who" placeholder="Nombre de la persona (ej: Juan)">
+      <button id="gen">Generar código</button>
+      <div id="codes"></div>
+      <p style="color:#999;font-size:13px">Los códigos usados se borran solos cuando la persona sale o cuando abres este panel.</p>
+    </div>
+
     <div class="box">
       <h2 style="margin-top:0">➕ Agregar botón</h2>
       <input id="nm" placeholder="Nombre del botón (ej: ⬇ WALLHACK 14/10/2026)">
@@ -66,17 +75,27 @@ const firebaseConfig = {
   measurementId: "G-Z3GD2Y1588"
 };
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(), db=firebase.database(), ref=db.ref("descargas");
+const auth=firebase.auth(), db=firebase.database(), ref=db.ref("descargas"), cref=db.ref("codigos");
+const TS=firebase.database.ServerValue.TIMESTAMP;
 const $=id=>document.getElementById(id);
 const say=t=>{$("msg").textContent=t};
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-let listening=false;
+let listening=false, offset=0, codeRows=[];
+db.ref(".info/serverTimeOffset").on("value",s=>{offset=s.val()||0});
 
-auth.onAuthStateChanged(u=>{
+auth.onAuthStateChanged(async u=>{
   $("login").style.display=u?"none":"block";
   $("panel").style.display=u?"block":"none";
   $("out").style.display=u?"block":"none";
-  if(u&&!listening){listening=true;ref.on("value",draw,e=>say("Error leyendo datos: "+e.message))}
+  if(u&&!listening){
+    listening=true;
+    /* copia la lista pública a la lista privada que usa /descapubli */
+    try{const s=await ref.once("value");await db.ref("privado").set(s.val())}
+    catch(e){say("No se pudo sincronizar (revisa que las reglas tengan tu UID): "+e.message)}
+    ref.on("value",draw,e=>say("Error leyendo datos: "+e.message));
+    cref.on("value",drawCodes,e=>say("Error leyendo códigos: "+e.message));
+    setInterval(paintCodes,5000);
+  }
 });
 
 $("go").onclick=async()=>{
@@ -86,12 +105,14 @@ $("go").onclick=async()=>{
 };
 $("out").onclick=()=>{auth.signOut();say("")};
 
+/* ===== BOTONES DE DESCARGA (se guardan en la lista pública y en la privada) ===== */
 $("add").onclick=async()=>{
   const name=$("nm").value.trim(), url=$("ur").value.trim();
   if(!name||!/^https?:\/\//i.test(url)){say("Pon un nombre y un link que empiece con http:// o https://");return}
   $("add").disabled=true;
   try{
-    await ref.push({name,url,ts:firebase.database.ServerValue.TIMESTAMP});
+    const id=ref.push().key, data={name,url,ts:TS};
+    await db.ref().update({["descargas/"+id]:data,["privado/"+id]:data});
     $("nm").value="";$("ur").value="";say("✅ Agregado");
   }catch(e){say("Error al guardar: "+e.message)}
   $("add").disabled=false;
@@ -112,17 +133,72 @@ function draw(snap){
 $("list").onclick=async e=>{
   const d=e.target.dataset.d, ed=e.target.dataset.e;
   try{
-    if(d&&confirm("¿Borrar este botón?")){await ref.child(d).remove();say("🗑 Borrado")}
+    if(d&&confirm("¿Borrar este botón?")){await db.ref().update({["descargas/"+d]:null,["privado/"+d]:null});say("🗑 Borrado")}
     if(ed){
       const it=window._items[ed];
       const name=prompt("Nombre del botón:",it.name); if(name===null)return;
       const url=prompt("Link:",it.url); if(url===null)return;
       if(!name.trim()||!/^https?:\/\//i.test(url.trim())){say("Datos no válidos");return}
-      await ref.child(ed).update({name:name.trim(),url:url.trim()});say("✅ Actualizado");
+      await db.ref().update({
+        ["descargas/"+ed+"/name"]:name.trim(),["descargas/"+ed+"/url"]:url.trim(),
+        ["privado/"+ed+"/name"]:name.trim(),["privado/"+ed+"/url"]:url.trim()
+      });
+      say("✅ Actualizado");
     }
   }catch(err){say("Error: "+err.message)}
 };
+
+/* ===== CÓDIGOS DE UN SOLO USO ===== */
+const AL="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; /* 32 caracteres, sin 0/O/1/I */
+function genCode(){
+  const a=new Uint8Array(12);crypto.getRandomValues(a);
+  let s="";for(let i=0;i<12;i++){s+=AL[a[i]%32];if(i%4===3&&i<11)s+="-"}
+  return s;
+}
+$("gen").onclick=async()=>{
+  const name=$("who").value.trim();
+  if(!name){say("Escribe el nombre de la persona");return}
+  $("gen").disabled=true;
+  try{
+    let c=genCode();
+    for(let i=0;i<5&&(await cref.child(c).once("value")).exists();i++)c=genCode();
+    await cref.child(c).set({name,ts:TS});
+    $("who").value="";say("✅ Código generado: "+c);
+  }catch(e){say("Error: "+e.message)}
+  $("gen").disabled=false;
+};
+function drawCodes(snap){
+  codeRows=[];
+  snap.forEach(ch=>{const v=ch.val();if(v)codeRows.push({id:ch.key,name:v.name||"",ts:v.ts||0,usadoPor:v.usadoPor||null,last:v.last||0})});
+  codeRows.sort((a,b)=>b.ts-a.ts);
+  /* limpieza: códigos usados cuya sesión ya terminó hace más de 60 s */
+  const now=Date.now()+offset, upd={};
+  codeRows.forEach(c=>{if(c.usadoPor&&c.last&&now-c.last>60000)upd["codigos/"+c.id]=null});
+  if(Object.keys(upd).length)db.ref().update(upd).catch(()=>{});
+  paintCodes();
+}
+function paintCodes(){
+  const now=Date.now()+offset;
+  const rows=codeRows.filter(c=>!(c.usadoPor&&c.last&&now-c.last>60000));
+  $("codes").innerHTML=rows.length?rows.map(c=>{
+    let st="🟢 Sin usar";
+    if(c.usadoPor)st=(c.last&&now-c.last<20000)?"🟡 En uso ahora":"⚪ Usado";
+    return `<div class="item">
+      <div class="t"><b>${esc(c.name)} · ${st}</b><code>${esc(c.id)}</code></div>
+      ${c.usadoPor?"":`<button class="cp" data-c="${esc(c.id)}">Copiar</button>`}
+      <button class="del" data-x="${esc(c.id)}">Borrar</button>
+    </div>`}).join(""):'<p style="color:#999;margin-top:8px">No hay códigos activos.</p>';
+}
+$("codes").onclick=async e=>{
+  const cp=e.target.dataset.c, x=e.target.dataset.x;
+  if(cp){
+    const txt="Tu código para descargar sin anuncios: "+cp+"\nEntra aquí: "+location.origin+"/descapubli\n⚠ Es de un solo uso. Si sales de la página más de 10 segundos, se cierra y el código ya no sirve.";
+    try{await navigator.clipboard.writeText(txt);say("📋 Mensaje copiado")}catch(err){prompt("Copia el mensaje:",txt)}
+  }
+  if(x&&confirm("¿Borrar este código?")){
+    try{await cref.child(x).remove();say("🗑 Código borrado")}catch(err){say("Error: "+err.message)}
+  }
+};
 </script>
 </body>
-  </html>
-  
+</html>
