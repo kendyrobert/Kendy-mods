@@ -116,6 +116,21 @@ function btn(text,cls,fn,disabled){
   $("act").innerHTML="";$("act").appendChild(b);
   return b;
 }
+/* botón de varios toques: cada toque lanza un anuncio; al completar N toques continúa */
+const TAPS=3;
+function multiBtn(text,cls,fn){
+  let c=0;
+  const label=()=>text+" ("+c+"/"+TAPS+")";
+  const b=btn(label(),cls,null,false);
+  b.onclick=()=>{
+    c++;
+    if(c>=TAPS){fn();return;}
+    b.textContent=label();
+    b.disabled=true;                 /* pausa corta para que el anuncio cargue y puedas volver */
+    setTimeout(()=>{b.disabled=false;loadAds(true)},1500);
+  };
+  return b;
+}
 /* cuenta regresiva basada en la hora real: no se reinicia aunque salgas a un anuncio o la página se recargue */
 function runCd(done){
   if(!st.end){st.end=Date.now()+10000;save();}
@@ -142,10 +157,10 @@ function go(){
   if(shown!==st.part)buildContent();
   else $("prog").textContent=st.part+"/"+TOTAL;
   if(st.stage==="cd1")runCd(()=>next("ready"));
-  else if(st.stage==="ready")btn("👉 Toca aquí","",()=>next("cd2"));
+  else if(st.stage==="ready")multiBtn("👉 Toca aquí","",()=>next("cd2"));
   else if(st.stage==="cd2")runCd(()=>next("final"));
   else if(st.stage==="final"){
-    if(st.part<TOTAL)btn("Continuar ➜","",()=>{st.part++;next("cd1");});
+    if(st.part<TOTAL)multiBtn("Continuar ➜","",()=>{st.part++;next("cd1");});
     else btn("▶ Seguir en YouTube","yt",()=>{
       let left=false;
       const clean=()=>{document.removeEventListener("visibilitychange",chk);window.removeEventListener("focus",chk);window.removeEventListener("blur",out)};
@@ -162,7 +177,7 @@ function go(){
     });
   }
   else if(st.stage==="yt")next("ytready");
-  else if(st.stage==="ytready")btn("✅ Ver descargas","",()=>{st.stage="dl";st.end=Date.now()+20000;save();location.reload();});
+  else if(st.stage==="ytready")multiBtn("✅ Ver descargas","",()=>{st.stage="dl";st.end=Date.now()+20000;save();location.reload();});
 }
 /* ===== SI SALES DE LA WEB 15 SEGUNDOS O MÁS, SE REINICIA TODO (excepto al ir a YouTube) ===== */
 const AWAY=15000;
@@ -197,10 +212,7 @@ function loadAds(force){
   if(rel==="preconnect")l.crossOrigin="";
   document.head.appendChild(l);
 });
-/* cada toque en cualquier parte (botones incluidos) prepara un anuncio nuevo */
-document.addEventListener("pointerdown",()=>loadAds(),true);
-/* refresco automático cada 20s mientras la página está visible */
-setInterval(()=>{if(document.visibilityState==="visible")loadAds(true)},20000);
+/* el anuncio se prepara al cargar y se renueva después de cada toque del botón (ver multiBtn) */
 loadAds(true);
 go();
 
