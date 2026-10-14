@@ -12,7 +12,7 @@ header span.p{background:#0008;padding:4px 12px;border-radius:20px;font-size:14p
 main{max-width:720px;margin:auto;padding:16px}
 h2{margin:12px 0;color:#ffd54f}
 .card{background:#1b1c35;border-radius:14px;padding:14px;margin:16px 0;box-shadow:0 2px 10px #0006}
-.card img{width:100%;border-radius:10px;display:block;margin-bottom:10px;background:#333;min-height:180px;object-fit:cover}
+.card img{width:100%;border-radius:10px;display:block;margin-bottom:10px;background:#333;aspect-ratio:7/4;height:auto;object-fit:cover}
 .card h3{color:#4dd0e1;margin-bottom:6px}
 .act{text-align:center;margin:30px 0 90px}
 button,.btn{display:block;width:100%;max-width:360px;margin:12px auto;padding:16px;border:0;border-radius:12px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;text-align:center;background:linear-gradient(90deg,#00c853,#00b0ff)}
@@ -27,6 +27,10 @@ footer{text-align:center;padding:20px;color:#888;font-size:13px}
 .gbox{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:380px;text-align:center}
 .gbox h2{color:#ff5c8a}.gbox p{margin:10px 0}#gmsg{color:#ffd54f;min-height:22px}
 .dlb{margin:20px auto}
+/* espacio de anuncio de tamaño FIJO: lo que cargue dentro no empuja ni mueve el resto de la página */
+.adslot{height:100px;overflow:hidden;contain:strict;margin:16px 0;text-align:center}
+/* la barra de scroll siempre ocupa su sitio: si un anuncio bloquea/desbloquea el scroll, la página no salta */
+html{scrollbar-gutter:stable;overflow-anchor:none;-webkit-text-size-adjust:100%}
 </style>
 </head>
 <body>
@@ -101,11 +105,14 @@ function reset(){st={part:1,stage:"cd1",end:0};save();}
 function buildContent(){
   $("prog").textContent=st.part+"/"+TOTAL;
   $("title").textContent=titles[st.part-1];
-  let h="";
+  let h='<div class="adslot" data-pos="top"></div>';
   for(let i=0;i<9;i++){
+    if(i===5)h+='<div class="adslot" data-pos="mid"></div>';
     h+=`<div class="card"><img loading="lazy" src="https://picsum.photos/seed/kendy${st.part}-${i}/700/400" alt=""><h3>${heads[(i+st.part)%heads.length]}</h3><p>${lorem}</p><p>${lorem}</p></div>`;
   }
+  h+='<div class="adslot" data-pos="bottom"></div>';
   $("content").innerHTML=h;
+  fillAdSlots();
   window.scrollTo(0,0);
   shown=st.part;
 }
@@ -177,13 +184,59 @@ window.addEventListener("pagehide",markAway);
 load();
 if(st.stage==="yt")st.stage="ytready";
 checkAway();
-function loadAds(){
+/* ===== ANUNCIOS: 3 espacios por parte (arriba, en medio y abajo) ===== */
+const ADS=[
+  {zone:"12014639",src:"https://al5sm.com/tag.min.js"},
+  {zone:"12014927",src:"https://nap5k.com/tag.min.js"}
+];
+function fillAdSlots(){
   if(st.stage==="dl")return;   /* en la sección de descargas NO se cargan anuncios */
-  const a=document.createElement("script");
-  a.dataset.zone="12014639";a.src="https://al5sm.com/tag.min.js";
-  document.body.appendChild(a);
+  const order={top:0,mid:1,bottom:0};   /* arriba: anuncio 1, en medio: anuncio 2, abajo: anuncio 1 */
+  document.querySelectorAll("#content .adslot").forEach(slot=>{
+    const ad=ADS[order[slot.dataset.pos]];
+    const s=document.createElement("script");
+    s.dataset.zone=ad.zone;s.src=ad.src;s.async=true;
+    slot.appendChild(s);
+  });
+  fillVignettes();
 }
-loadAds();
+/* ===== VENTANAS DE ANUNCIO (vignette): 3 por parte =====
+   Una al abrir la parte (arriba), otra al llegar a la mitad y otra al llegar abajo.
+   Cada espacio dispara su ventana la primera vez que se ve en pantalla. */
+const VIGNETTE={zone:"12014841",src:"https://n6wxm.com/vignette.min.js"};
+let vObs=null, vQueue=[], vBusy=false, vLast=0, lastScroll=0;
+const V_GAP=6000;      /* mínimo entre una ventana y la siguiente (así no se piden juntas y no se traba) */
+const V_QUIET=700;     /* se espera a que la persona deje de hacer scroll antes de pedir la ventana */
+window.addEventListener("scroll",()=>{lastScroll=Date.now()},{passive:true});
+function fireVignette(slot){
+  const s=document.createElement("script");
+  s.dataset.zone=VIGNETTE.zone;s.src=VIGNETTE.src;s.async=true;
+  slot.appendChild(s);
+}
+/* saca las ventanas de la cola de una en una, cuando la página está quieta, visible y sin carga */
+function pumpVignettes(){
+  if(vBusy||!vQueue.length)return;
+  vBusy=true;
+  const tryFire=()=>{
+    if(!vQueue.length){vBusy=false;return}
+    const now=Date.now();
+    if(document.visibilityState!=="visible"||now-lastScroll<V_QUIET||now-vLast<V_GAP){setTimeout(tryFire,400);return}
+    const slot=vQueue.shift();
+    const go2=()=>{vLast=Date.now();fireVignette(slot);setTimeout(tryFire,V_GAP)};
+    ("requestIdleCallback" in window)?requestIdleCallback(go2,{timeout:1500}):setTimeout(go2,0);
+  };
+  tryFire();
+}
+function fillVignettes(){
+  if(vObs){vObs.disconnect();vObs=null}
+  vQueue=[];
+  const slots=document.querySelectorAll("#content .adslot");
+  if(!("IntersectionObserver" in window)){vQueue=Array.from(slots);pumpVignettes();return}
+  vObs=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){vObs.unobserve(e.target);vQueue.push(e.target);pumpVignettes()}
+  }),{threshold:0.1});
+  slots.forEach(sl=>vObs.observe(sl));
+}
 go();
 
 /* ===== DETECTOR DE BLOQUEO DE ANUNCIOS / DNS ===== */
