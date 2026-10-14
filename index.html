@@ -3,44 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kendy mods</title>
+<meta name="robots" content="noindex,nofollow">
+<title>Kendy mods - Descargas directas</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,Arial,sans-serif;background:#0f1020;color:#eee;line-height:1.6}
-header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:800}
-header span.p{background:#0008;padding:4px 12px;border-radius:20px;font-size:14px}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+header button{width:auto;margin:0;padding:6px 14px;font-size:14px;background:#0008}
 main{max-width:720px;margin:auto;padding:16px}
-h2{margin:12px 0;color:#ffd54f}
-.card{background:#1b1c35;border-radius:14px;padding:14px;margin:16px 0;box-shadow:0 2px 10px #0006}
-.card img{width:100%;border-radius:10px;display:block;margin-bottom:10px;background:#333;min-height:180px;object-fit:cover}
-.card h3{color:#4dd0e1;margin-bottom:6px}
-.act{text-align:center;margin:30px 0 90px}
-button,.btn{display:block;width:100%;max-width:360px;margin:12px auto;padding:16px;border:0;border-radius:12px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;text-align:center;background:linear-gradient(90deg,#00c853,#00b0ff)}
-button:disabled{background:#555;color:#bbb;cursor:not-allowed}
-.yt{background:linear-gradient(90deg,#ff1744,#d50000)}
-.mf{background:linear-gradient(90deg,#2979ff,#7c4dff)}
-#dl{display:none}
+h2{margin:20px 0 12px;color:#ffd54f;text-align:center}
+.box{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:400px;margin:40px auto;text-align:center}
+.box p{margin:10px 0}
+input{width:100%;padding:14px;margin:10px 0;border-radius:10px;border:1px solid #555;background:#0f1020;color:#fff;font-size:20px;text-align:center;letter-spacing:2px;text-transform:uppercase}
+input.adm{text-transform:none;letter-spacing:0;font-size:16px}
+button{display:block;width:100%;padding:14px;margin:8px 0;border:0;border-radius:12px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(90deg,#00c853,#00b0ff)}
+button:disabled{background:#555;color:#bbb}
+#msg,#amsg{color:#ffd54f;min-height:24px}
+.small{color:#aaa;font-size:13px}
+a{color:#4dd0e1}
+#adminbox{display:none;margin-top:10px;border-top:1px solid #444;padding-top:10px}
+.btn{display:block;width:100%;max-width:420px;margin:12px auto;padding:16px;border-radius:12px;font-size:18px;font-weight:800;color:#fff;text-decoration:none;text-align:center;background:linear-gradient(90deg,#2979ff,#7c4dff)}
+.btn:active{opacity:.8}
+.note{text-align:center;color:#aaa;font-size:14px;margin-top:20px}
+footer{text-align:center;padding:20px;color:#888;font-size:13px}
+#content{display:none}
 .wa{position:fixed;right:16px;bottom:16px;z-index:10;width:60px;height:60px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px #0008}
 .wa svg{width:34px;height:34px;fill:#fff}
-footer{text-align:center;padding:20px;color:#888;font-size:13px}
-#gate{display:none;position:fixed;inset:0;z-index:99999;background:rgba(5,5,15,.94);align-items:center;justify-content:center;padding:20px}
-.gbox{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:380px;text-align:center}
-.gbox h2{color:#ff5c8a}.gbox p{margin:10px 0}#gmsg{color:#ffd54f;min-height:22px}
-.dlb{margin:20px auto}
 </style>
 </head>
 <body>
-<header><div>🔥 Kendy mods</div><span class="p" id="prog">1/6</span></header>
+<header><div>🔥 Kendy mods · Descargas directas</div><button id="out" style="display:none">Salir</button></header>
 <main>
-<div id="steps">
-  <h2 id="title"></h2>
-  <div id="content"></div>
-  <div class="act" id="act"></div>
-</div>
-<div id="dl">
-  <h2>✅ ¡Listo! Descarga tus APK y archivos</h2>
-  <div id="dlList"></div>
-</div>
+  <div id="gate" class="box">
+    <h2 style="margin-top:0">🔑 Ingresa tu código</h2>
+    <p class="small">Tu código es de <b>un solo uso</b>. Si sales de esta página más de 10 segundos, la sesión se cierra y necesitarás otro código.</p>
+    <input id="code" placeholder="XXXX-XXXX-XXXX" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button id="enter">Entrar</button>
+    <p id="msg"></p>
+
+    <p class="small" style="margin-top:18px"><a href="#" id="adminlink">Soy admin</a></p>
+    <div id="adminbox">
+      <input id="aem" class="adm" type="email" placeholder="Correo" autocomplete="username">
+      <input id="apw" class="adm" type="password" placeholder="Contraseña" autocomplete="current-password">
+      <button id="alogin">Entrar como admin</button>
+      <p id="amsg"></p>
+    </div>
+  </div>
+
+  <div id="content">
+    <h2>⬇ Todas las descargas</h2>
+    <div id="list"></div>
+    <p class="note" id="note">⚠ Si sales de esta página más de 10 segundos, la sesión se cierra.</p>
+  </div>
 </main>
 <footer>© Kendy mods</footer>
 
@@ -49,16 +63,9 @@ footer{text-align:center;padding:20px;color:#888;font-size:13px}
 </a>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-const TOTAL=6;
-const YT_URL="https://youtube.com/@kendymods?si=2CoZ_dAt9j_QMCiT";
-const titles=["Bienvenido a Kendy mods","Todo para Free Fire","Paneles y configuraciones","Trucos y consejos","Actualizaciones y novedades","Último paso: ¡Sígueme!"];
-const heads=["Mods exclusivos","Sensibilidad perfecta","Paneles listos","Archivos seguros","Siempre actualizado","Comunidad Kendy","Guías fáciles","Soporte","Novedades","Consejos pro"];
-const lorem="Aquí encontrarás archivos, mods, paneles y configuraciones para Free Fire y mucho más. Lee con calma cada parte, sigue los pasos y prepara tu dispositivo antes de descargar. Todo el contenido se actualiza con frecuencia para que siempre tengas lo último. Recuerda hacer copia de seguridad y compartir la web con tus amigos para que no se pierdan nada.";
-let part=1, yt=false;
-const $=id=>document.getElementById(id);
-/* ===== FIREBASE: la lista de descargas se lee de la base de datos (se edita desde /admin) ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyAWr9YM0YAG0mx0SEk3qNEhjeS1MOu_2lg",
   authDomain: "kendy-57bcd.firebaseapp.com",
@@ -69,166 +76,175 @@ const firebaseConfig = {
   appId: "1:678778497788:web:e1459854025fd4a1f98579",
   measurementId: "G-Z3GD2Y1588"
 };
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.database();
+const TS=firebase.database.ServerValue.TIMESTAMP;
+const $=id=>document.getElementById(id);
+
+const AWAY=10000;   /* milisegundos fuera de la página antes de cerrar la sesión */
+const BEAT=4000;    /* cada cuánto se avisa al servidor que la sesión sigue activa */
+
+const LS={
+  get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
+  set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},
+  del:k=>{try{localStorage.removeItem(k)}catch(e){}}
+};
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeUrl(u){return /^https?:\/\//i.test(u)?u:"#"}
-function renderDl(list){
-  $("dlList").innerHTML=list.length
-    ? list.map(b=>`<a class="btn mf dlb" href="${esc(safeUrl(b[1]))}" target="_blank" rel="noopener">${esc(b[0])}</a>`).join("")
-    : '<p style="text-align:center;color:#aaa">Aún no hay descargas.</p>';
+function normalize(s){
+  const t=String(s).toUpperCase().replace(/[^A-Z0-9]/g,"");
+  const g=t.match(/.{1,4}/g);
+  return g?g.join("-"):"";
 }
-/* 1) se muestra al instante lo último guardado en el dispositivo */
-let cached=null;
-try{cached=JSON.parse(localStorage.getItem("kendy_dl"))}catch(e){}
-renderDl(Array.isArray(cached)?cached:[]);
-/* 2) luego se actualiza en vivo desde Firebase */
-try{
-  firebase.initializeApp(firebaseConfig);
-  firebase.database().ref("descargas").on("value",snap=>{
-    const arr=[];
-    snap.forEach(ch=>{const v=ch.val();if(v&&v.name&&v.url)arr.push([v.name,v.url,v.ts||0])});
-    arr.sort((a,b)=>b[2]-a[2]);
-    renderDl(arr);
-    try{localStorage.setItem("kendy_dl",JSON.stringify(arr))}catch(e){}
-  },()=>{});
-}catch(e){}
 
-const KEY="kendy_state";
-let st={part:1,stage:"cd1",end:0}, timer=null, shown=0;
-function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
-function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.part>=1&&x.part<=TOTAL)st=x}catch(e){}}
-function reset(){st={part:1,stage:"cd1",end:0};save();}
+let code=null, beat=null, awayT=null, hiddenAt=0, starting=false, admin=false;
 
-function buildContent(){
-  $("prog").textContent=st.part+"/"+TOTAL;
-  $("title").textContent=titles[st.part-1];
-  let h="";
-  for(let i=0;i<9;i++){
-    h+=`<div class="card"><img loading="lazy" src="https://picsum.photos/seed/kendy${st.part}-${i}/700/400" alt=""><h3>${heads[(i+st.part)%heads.length]}</h3><p>${lorem}</p><p>${lorem}</p></div>`;
+function showGate(msg){
+  $("content").style.display="none";$("gate").style.display="block";$("out").style.display="none";
+  $("msg").textContent=msg||"";$("enter").disabled=false;$("code").value="";
+  $("adminbox").style.display="none";$("amsg").textContent="";$("apw").value="";$("alogin").disabled=false;
+}
+function showContent(){
+  $("gate").style.display="none";$("content").style.display="block";$("out").style.display="block";
+}
+function render(snap){
+  const arr=[];
+  snap.forEach(ch=>{const v=ch.val();if(v&&v.name&&v.url)arr.push([v.name,v.url,v.ts||0])});
+  arr.sort((a,b)=>b[2]-a[2]);
+  $("list").innerHTML=arr.length
+    ? arr.map(b=>`<a class="btn" href="${esc(safeUrl(b[1]))}" target="_blank" rel="noopener">${esc(b[0])}</a>`).join("")
+    : '<p class="note">Aún no hay descargas.</p>';
+}
+
+/* ===== SESIÓN DE ADMIN (sin código, sin límite de tiempo) ===== */
+function startAdmin(){
+  admin=true;
+  clearInterval(beat);clearTimeout(awayT);
+  $("note").style.display="none";
+  showContent();
+  db.ref("privado").on("value",render,()=>adminOut("No se pudo leer la lista. Revisa las reglas de Firebase."));
+}
+async function adminOut(msg){
+  admin=false;
+  try{db.ref("privado").off()}catch(e){}
+  $("list").innerHTML="";
+  showGate(msg);
+  try{await auth.signOut()}catch(e){}   /* solo se cierra sesión: la cuenta de admin NUNCA se borra */
+}
+async function adminLogin(){
+  const em=$("aem").value.trim(), pw=$("apw").value;
+  if(!em||!pw){$("amsg").textContent="Escribe correo y contraseña.";return}
+  $("alogin").disabled=true;$("amsg").textContent="Entrando...";
+  try{
+    await auth.signInWithEmailAndPassword(em,pw);
+    $("apw").value="";$("amsg").textContent="";$("alogin").disabled=false;
+    startAdmin();
+  }catch(e){
+    $("amsg").textContent="Correo o contraseña incorrectos.";$("alogin").disabled=false;
   }
-  $("content").innerHTML=h;
-  window.scrollTo(0,0);
-  shown=st.part;
 }
-function btn(text,cls,fn,disabled){
-  const b=document.createElement("button");
-  b.textContent=text;b.className=cls||"";b.disabled=!!disabled;
-  if(fn)b.onclick=fn;
-  $("act").innerHTML="";$("act").appendChild(b);
-  return b;
-}
-/* cuenta regresiva basada en la hora real: no se reinicia aunque salgas a un anuncio o la página se recargue */
-function runCd(done){
-  if(!st.end){st.end=Date.now()+10000;save();}
-  const b=btn("","",null,true);
-  const tick=()=>{
-    const r=Math.ceil((st.end-Date.now())/1000);
-    if(r<=0){clearInterval(timer);done();}
-    else b.textContent="Espera "+r+"s";
-  };
-  if(Math.ceil((st.end-Date.now())/1000)<=0){done();return;}
-  tick();timer=setInterval(tick,250);
-}
-function next(stage,end){st.stage=stage;st.end=end||0;save();go();}
+$("adminlink").onclick=e=>{
+  e.preventDefault();
+  const b=$("adminbox");
+  b.style.display=b.style.display==="block"?"none":"block";
+};
+$("alogin").onclick=adminLogin;
+$("apw").addEventListener("keydown",e=>{if(e.key==="Enter")adminLogin()});
 
-function go(){
-  clearInterval(timer);
-  if(st.stage==="dl"){
-    $("steps").style.display="none";$("dl").style.display="block";$("prog").textContent="✔";
-    const chk=()=>{if(Date.now()>=st.end){clearInterval(timer);reset();location.reload();return true}return false};
-    if(!chk())timer=setInterval(chk,500);
-    return;
-  }
-  $("dl").style.display="none";$("steps").style.display="block";
-  if(shown!==st.part)buildContent();
-  else $("prog").textContent=st.part+"/"+TOTAL;
-  if(st.stage==="cd1")runCd(()=>next("ready"));
-  else if(st.stage==="ready")btn("👉 Toca aquí","",()=>next("cd2"));
-  else if(st.stage==="cd2")runCd(()=>next("final"));
-  else if(st.stage==="final"){
-    if(st.part<TOTAL)btn("Continuar ➜","",()=>{st.part++;next("cd1");});
-    else btn("▶ Seguir en YouTube","yt",()=>{
-      let left=false;
-      const clean=()=>{document.removeEventListener("visibilitychange",chk);window.removeEventListener("focus",chk);window.removeEventListener("blur",out)};
-      const out=()=>{left=true};
-      const chk=()=>{
-        if(document.visibilityState==="hidden"){left=true;return}
-        if(left){clean();next("ytready");}
-      };
-      st.stage="yt";save();
-      window.addEventListener("blur",out);
-      document.addEventListener("visibilitychange",chk);
-      window.addEventListener("focus",chk);
-      window.open(YT_URL,"_blank");
-    });
-  }
-  else if(st.stage==="yt")next("ytready");
-  else if(st.stage==="ytready")btn("✅ Ver descargas","",()=>{st.stage="dl";st.end=Date.now()+20000;save();location.reload();});
+/* ===== SESIÓN DE INVITADO (con código) ===== */
+async function closeSession(msg){
+  clearInterval(beat);clearTimeout(awayT);hiddenAt=0;
+  try{db.ref("privado").off()}catch(e){}
+  const c=code||LS.get("kendy_dp_code");
+  const u=auth.currentUser;
+  const anon=!!(u&&u.isAnonymous);   /* solo se borran cuentas anónimas, nunca la del admin */
+  code=null;
+  LS.del("kendy_dp_code");LS.del("kendy_dp_last");
+  $("list").innerHTML="";
+  showGate(msg);
+  /* se borra el código y la sesión en la base de datos */
+  try{if(c)await db.ref("codigos/"+c).remove()}catch(e){}
+  try{if(anon)await db.ref("sesiones/"+u.uid).remove()}catch(e){}
+  try{if(anon)await u.delete()}catch(e){try{await auth.signOut()}catch(_){}}
 }
-/* ===== SI SALES DE LA WEB 15 SEGUNDOS O MÁS, SE REINICIA TODO (excepto al ir a YouTube) ===== */
-const AWAY=15000;
-function markAway(){if(st.stage==="yt")return;try{localStorage.setItem("kendy_away",String(Date.now()))}catch(e){}}
-function checkAway(){
-  let t=0;
-  try{t=+localStorage.getItem("kendy_away")||0;localStorage.removeItem("kendy_away")}catch(e){}
-  if(t&&Date.now()-t>=AWAY&&st.stage!=="yt"){const d=st.stage==="dl";reset();if(d){location.reload();return;}shown=0;go();}
-}
-document.addEventListener("visibilitychange",()=>{document.visibilityState==="hidden"?markAway():checkAway()});
-window.addEventListener("pagehide",markAway);
-load();
-if(st.stage==="yt")st.stage="ytready";
-checkAway();
-function loadAds(){
-  if(st.stage==="dl")return;   /* en la sección de descargas NO se cargan anuncios */
-  const a=document.createElement("script");
-  a.dataset.zone="12014639";a.src="https://al5sm.com/tag.min.js";
-  document.body.appendChild(a);
-}
-loadAds();
-go();
 
-/* ===== DETECTOR DE BLOQUEO DE ANUNCIOS / DNS ===== */
-const AD_URL="https://al5sm.com/tag.min.js";
-const gate=document.createElement("div");
-gate.id="gate";
-gate.innerHTML='<div class="gbox"><h2>🚫 Bloqueo detectado</h2><p>Detectamos un bloqueador de anuncios, un DNS privado que los bloquea o que no hay internet. Desactívalo para esta página y toca Reintentar para continuar.</p><p id="gmsg"></p><button id="gretry">🔄 Reintentar</button></div>';
-document.body.appendChild(gate);
-let checking=false, wasBlocked=false;
-async function isBlocked(){
-  const bait=document.createElement("div");
-  bait.className="adsbox ad-banner pub_300x250";
-  bait.style.cssText="position:absolute;left:-999px;top:0;width:10px;height:10px";
-  document.body.appendChild(bait);
-  await new Promise(r=>setTimeout(r,120));
-  const cs=getComputedStyle(bait);
-  const hid=bait.offsetHeight===0||cs.display==="none"||cs.visibility==="hidden";
-  bait.remove();
-  if(hid)return true;
-  try{await fetch(AD_URL+"?t="+Date.now(),{mode:"no-cors",cache:"no-store"});return false;}
-  catch(e){return true;}
+async function pulse(){
+  if(!code)return;
+  try{
+    await db.ref("codigos/"+code+"/last").set(TS);
+    LS.set("kendy_dp_last",String(Date.now()));
+  }catch(e){
+    closeSession("La sesión terminó. Necesitas un código nuevo.");
+  }
 }
-let epoch=0, graceUntil=0;
-/* al salir/volver (anuncio) se ignoran las verificaciones en curso y se espera 3s */
-document.addEventListener("visibilitychange",()=>{epoch++;graceUntil=Date.now()+3000;});
-async function check(manual){
-  if(checking||st.stage==="dl")return;
-  if(!manual&&(document.visibilityState!=="visible"||Date.now()<graceUntil))return;
-  checking=true;
-  if(!document.body.contains(gate))document.body.appendChild(gate);
-  const e0=epoch;
-  let b=await isBlocked();
-  if(b){await new Promise(r=>setTimeout(r,1500));b=await isBlocked();}   /* hay que confirmarlo 2 veces */
-  if(epoch!==e0||document.visibilityState!=="visible"){checking=false;return;}  /* si se fue a un anuncio, se ignora */
-  gate.style.display=b?"flex":"none";
-  document.body.style.overflow=b?"hidden":"";
-  if(b&&!wasBlocked){reset();shown=0;go();}   /* bloqueo detectado: todo vuelve a 1/6 */
-  if(!b&&wasBlocked){reset();shown=0;go();}   /* ya sin bloqueo: empieza de cero */
-  wasBlocked=b;
-  $("gmsg").textContent=(b&&manual)?"Todavía se detecta el bloqueo. Intenta de nuevo.":"";
-  checking=false;
+
+function startSession(){
+  $("note").style.display="block";
+  showContent();
+  clearInterval(beat);
+  beat=setInterval(()=>{if(!document.hidden)pulse()},BEAT);
+  db.ref("privado").on("value",render,()=>closeSession("No se pudo abrir la sesión. Necesitas un código nuevo."));
 }
-$("gretry").onclick=()=>{$("gmsg").textContent="Verificando...";check(true);};
-check();
-setInterval(check,4000);
+
+async function enter(){
+  if(starting)return;
+  const c=normalize($("code").value);
+  if(c.length!==14){$("msg").textContent="Escribe el código completo.";return}
+  starting=true;$("enter").disabled=true;$("msg").textContent="Verificando...";
+  try{
+    if(!auth.currentUser)await auth.signInAnonymously();
+    const uid=auth.currentUser.uid;
+    /* 1) se "quema" el código: solo se puede si existe y nadie lo usó antes */
+    try{await db.ref("codigos/"+c+"/usadoPor").set(uid)}catch(e){}
+    /* 2) se abre la sesión */
+    try{await db.ref("sesiones/"+uid).set(c)}catch(e){}
+    /* 3) primer aviso de actividad: solo funciona si el código ya es mío */
+    await db.ref("codigos/"+c+"/last").set(TS);
+    code=c;
+    LS.set("kendy_dp_code",c);LS.set("kendy_dp_last",String(Date.now()));
+    startSession();
+  }catch(e){
+    $("msg").textContent="Código inválido o ya usado.";$("enter").disabled=false;
+    try{if(auth.currentUser&&auth.currentUser.isAnonymous)await auth.currentUser.delete()}catch(_){}
+  }
+  starting=false;
+}
+$("enter").onclick=enter;
+$("code").addEventListener("keydown",e=>{if(e.key==="Enter")enter()});
+$("out").onclick=()=>{admin?adminOut("Sesión cerrada."):closeSession("Sesión cerrada.")};
+
+/* ===== si sales de la página AWAY milisegundos, se cierra (solo invitados) ===== */
+document.addEventListener("visibilitychange",()=>{
+  if(!code||admin)return;
+  if(document.hidden){
+    hiddenAt=Date.now();
+    clearTimeout(awayT);
+    awayT=setTimeout(()=>closeSession("Saliste de la página. Necesitas un código nuevo."),AWAY);
+  }else{
+    clearTimeout(awayT);
+    if(hiddenAt&&Date.now()-hiddenAt>=AWAY){closeSession("Saliste de la página. Necesitas un código nuevo.")}
+    else{hiddenAt=0;pulse()}
+  }
+});
+window.addEventListener("pagehide",()=>{if(code)LS.set("kendy_dp_last",String(Date.now()))});
+
+/* ===== al abrir/recargar la página ===== */
+let init=false;
+auth.onAuthStateChanged(async u=>{
+  if(init)return;init=true;
+  /* si hay una cuenta real (admin) guardada en este dispositivo, se abre directo y no se borra nada */
+  if(u&&!u.isAnonymous){startAdmin();return}
+  const c=LS.get("kendy_dp_code");
+  if(!c){showGate("");if(u){try{await u.delete()}catch(e){}}return}
+  const last=+LS.get("kendy_dp_last")||0;
+  if(u&&Date.now()-last<AWAY){
+    code=c;
+    try{await db.ref("codigos/"+c+"/last").set(TS);LS.set("kendy_dp_last",String(Date.now()));startSession()}
+    catch(e){closeSession("La sesión terminó. Necesitas un código nuevo.")}
+  }else{
+    closeSession("La sesión se cerró. Necesitas un código nuevo.");
+  }
+});
 </script>
 </body>
 </html>
