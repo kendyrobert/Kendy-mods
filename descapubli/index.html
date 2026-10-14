@@ -8,31 +8,51 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,Arial,sans-serif;background:#0f1020;color:#eee;line-height:1.6}
-header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;font-weight:800}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+header button{width:auto;margin:0;padding:6px 14px;font-size:14px;background:#0008}
 main{max-width:720px;margin:auto;padding:16px}
 h2{margin:20px 0 12px;color:#ffd54f;text-align:center}
+.box{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:400px;margin:40px auto;text-align:center}
+.box p{margin:10px 0}
+input{width:100%;padding:14px;margin:10px 0;border-radius:10px;border:1px solid #555;background:#0f1020;color:#fff;font-size:20px;text-align:center;letter-spacing:2px;text-transform:uppercase}
+button{display:block;width:100%;padding:14px;margin:8px 0;border:0;border-radius:12px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(90deg,#00c853,#00b0ff)}
+button:disabled{background:#555;color:#bbb}
+#msg{color:#ffd54f;min-height:24px}
+.small{color:#aaa;font-size:13px}
 .btn{display:block;width:100%;max-width:420px;margin:12px auto;padding:16px;border-radius:12px;font-size:18px;font-weight:800;color:#fff;text-decoration:none;text-align:center;background:linear-gradient(90deg,#2979ff,#7c4dff)}
 .btn:active{opacity:.8}
 .note{text-align:center;color:#aaa;font-size:14px;margin-top:20px}
 footer{text-align:center;padding:20px;color:#888;font-size:13px}
+#content{display:none}
 .wa{position:fixed;right:16px;bottom:16px;z-index:10;width:60px;height:60px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px #0008}
 .wa svg{width:34px;height:34px;fill:#fff}
 </style>
 </head>
 <body>
-<header>🔥 Kendy mods · Descargas directas</header>
+<header><div>馃敟 Kendy mods 路 Descargas directas</div><button id="out" style="display:none">Salir</button></header>
 <main>
-  <h2>⬇ Todas las descargas</h2>
-  <div id="list"></div>
-  <p class="note">Si un enlace no abre, avísame por el canal de WhatsApp.</p>
+  <div id="gate" class="box">
+    <h2 style="margin-top:0">馃攽 Ingresa tu c贸digo</h2>
+    <p class="small">Tu c贸digo es de <b>un solo uso</b>. Si sales de esta p谩gina m谩s de 10 segundos, la sesi贸n se cierra y necesitar谩s otro c贸digo.</p>
+    <input id="code" placeholder="XXXX-XXXX-XXXX" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button id="enter">Entrar</button>
+    <p id="msg"></p>
+  </div>
+
+  <div id="content">
+    <h2>猬� Todas las descargas</h2>
+    <div id="list"></div>
+    <p class="note">鈿� Si sales de esta p谩gina m谩s de 10 segundos, la sesi贸n se cierra.</p>
+  </div>
 </main>
-<footer>© Kendy mods</footer>
+<footer>漏 Kendy mods</footer>
 
 <a class="wa" href="https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40" target="_blank" rel="noopener" aria-label="WhatsApp">
 <svg viewBox="0 0 32 32"><path d="M16 3C9 3 3.4 8.6 3.4 15.5c0 2.3.6 4.4 1.7 6.3L3 29l7.4-2c1.8 1 3.800 1.500 5.600 1.500 7 0 12.600-5.600 12.600-12.500S23 3 16 3zm0 22.800c-1.800 0-3.500-.5-5-1.400l-.4-.2-4.400 1.200 1.200-4.300-.3-.4a10 10 0 0 1-1.500-5.300C5.600 9.900 10.300 5.300 16 5.300s10.400 4.600 10.400 10.200S21.700 25.800 16 25.800zm5.700-7.500c-.3-.2-1.800-.9-2.100-1-.3-.1-.5-.2-.7.200s-.8 1-1 1.200c-.2.200-.4.200-.7.100-.3-.2-1.300-.5-2.500-1.500-.9-.8-1.500-1.800-1.700-2.100-.2-.3 0-.5.100-.6l.5-.5c.1-.2.200-.3.300-.5.100-.2.100-.4 0-.5l-1-2.300c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.100-.8.400-.3.300-1.100 1-1.100 2.600s1.100 3 1.300 3.200c.2.200 2.200 3.400 5.400 4.700 3.200 1.300 3.200.9 3.800.8.600-.1 1.800-.7 2.100-1.500.3-.7.300-1.300.2-1.500-.1-.2-.3-.3-.6-.4z"/></svg>
 </a>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 const firebaseConfig = {
@@ -45,27 +65,135 @@ const firebaseConfig = {
   appId: "1:678778497788:web:e1459854025fd4a1f98579",
   measurementId: "G-Z3GD2Y1588"
 };
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.database();
+const TS=firebase.database.ServerValue.TIMESTAMP;
 const $=id=>document.getElementById(id);
+
+const AWAY=10000;   /* milisegundos fuera de la p谩gina antes de cerrar la sesi贸n */
+const BEAT=4000;    /* cada cu谩nto se avisa al servidor que la sesi贸n sigue activa */
+
+const LS={
+  get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
+  set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},
+  del:k=>{try{localStorage.removeItem(k)}catch(e){}}
+};
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeUrl(u){return /^https?:\/\//i.test(u)?u:"#"}
-function render(list){
-  $("list").innerHTML=list.length
-    ? list.map(b=>`<a class="btn" href="${esc(safeUrl(b[1]))}" target="_blank" rel="noopener">${esc(b[0])}</a>`).join("")
-    : '<p class="note">Aún no hay descargas.</p>';
+function normalize(s){
+  const t=String(s).toUpperCase().replace(/[^A-Z0-9]/g,"");
+  const g=t.match(/.{1,4}/g);
+  return g?g.join("-"):"";
 }
-let cached=null;
-try{cached=JSON.parse(localStorage.getItem("kendy_dl"))}catch(e){}
-render(Array.isArray(cached)?cached:[]);
-try{
-  firebase.initializeApp(firebaseConfig);
-  firebase.database().ref("descargas").on("value",snap=>{
-    const arr=[];
-    snap.forEach(ch=>{const v=ch.val();if(v&&v.name&&v.url)arr.push([v.name,v.url,v.ts||0])});
-    arr.sort((a,b)=>b[2]-a[2]);
-    render(arr);
-    try{localStorage.setItem("kendy_dl",JSON.stringify(arr))}catch(e){}
-  },()=>{});
-}catch(e){}
+
+let code=null, beat=null, awayT=null, hiddenAt=0, starting=false;
+
+function showGate(msg){
+  $("content").style.display="none";$("gate").style.display="block";$("out").style.display="none";
+  $("msg").textContent=msg||"";$("enter").disabled=false;$("code").value="";
+}
+function showContent(){
+  $("gate").style.display="none";$("content").style.display="block";$("out").style.display="block";
+}
+function render(snap){
+  const arr=[];
+  snap.forEach(ch=>{const v=ch.val();if(v&&v.name&&v.url)arr.push([v.name,v.url,v.ts||0])});
+  arr.sort((a,b)=>b[2]-a[2]);
+  $("list").innerHTML=arr.length
+    ? arr.map(b=>`<a class="btn" href="${esc(safeUrl(b[1]))}" target="_blank" rel="noopener">${esc(b[0])}</a>`).join("")
+    : '<p class="note">A煤n no hay descargas.</p>';
+}
+
+async function closeSession(msg){
+  clearInterval(beat);clearTimeout(awayT);hiddenAt=0;
+  try{db.ref("privado").off()}catch(e){}
+  const c=code||LS.get("kendy_dp_code");
+  const u=auth.currentUser;
+  code=null;
+  LS.del("kendy_dp_code");LS.del("kendy_dp_last");
+  $("list").innerHTML="";
+  showGate(msg);
+  /* se borra el c贸digo y la sesi贸n en la base de datos */
+  try{if(c)await db.ref("codigos/"+c).remove()}catch(e){}
+  try{if(u)await db.ref("sesiones/"+u.uid).remove()}catch(e){}
+  try{if(u)await u.delete()}catch(e){try{await auth.signOut()}catch(_){}}
+}
+
+async function pulse(){
+  if(!code)return;
+  try{
+    await db.ref("codigos/"+code+"/last").set(TS);
+    LS.set("kendy_dp_last",String(Date.now()));
+  }catch(e){
+    closeSession("La sesi贸n termin贸. Necesitas un c贸digo nuevo.");
+  }
+}
+
+function startSession(){
+  showContent();
+  clearInterval(beat);
+  beat=setInterval(()=>{if(!document.hidden)pulse()},BEAT);
+  db.ref("privado").on("value",render,()=>closeSession("No se pudo abrir la sesi贸n. Necesitas un c贸digo nuevo."));
+}
+
+async function enter(){
+  if(starting)return;
+  const c=normalize($("code").value);
+  if(c.length!==14){$("msg").textContent="Escribe el c贸digo completo.";return}
+  starting=true;$("enter").disabled=true;$("msg").textContent="Verificando...";
+  try{
+    if(!auth.currentUser)await auth.signInAnonymously();
+    const uid=auth.currentUser.uid;
+    /* 1) se "quema" el c贸digo: solo se puede si existe y nadie lo us贸 antes */
+    try{await db.ref("codigos/"+c+"/usadoPor").set(uid)}catch(e){}
+    /* 2) se abre la sesi贸n */
+    try{await db.ref("sesiones/"+uid).set(c)}catch(e){}
+    /* 3) primer aviso de actividad: solo funciona si el c贸digo ya es m铆o */
+    await db.ref("codigos/"+c+"/last").set(TS);
+    code=c;
+    LS.set("kendy_dp_code",c);LS.set("kendy_dp_last",String(Date.now()));
+    startSession();
+  }catch(e){
+    $("msg").textContent="C贸digo inv谩lido o ya usado.";$("enter").disabled=false;
+    try{if(auth.currentUser)await auth.currentUser.delete()}catch(_){}
+  }
+  starting=false;
+}
+$("enter").onclick=enter;
+$("code").addEventListener("keydown",e=>{if(e.key==="Enter")enter()});
+$("out").onclick=()=>closeSession("Sesi贸n cerrada.");
+
+/* ===== si sales de la p谩gina AWAY milisegundos, se cierra ===== */
+document.addEventListener("visibilitychange",()=>{
+  if(!code)return;
+  if(document.hidden){
+    hiddenAt=Date.now();
+    clearTimeout(awayT);
+    awayT=setTimeout(()=>closeSession("Saliste de la p谩gina. Necesitas un c贸digo nuevo."),AWAY);
+  }else{
+    clearTimeout(awayT);
+    if(hiddenAt&&Date.now()-hiddenAt>=AWAY){closeSession("Saliste de la p谩gina. Necesitas un c贸digo nuevo.")}
+    else{hiddenAt=0;pulse()}
+  }
+});
+window.addEventListener("pagehide",()=>{if(code)LS.set("kendy_dp_last",String(Date.now()))});
+
+/* ===== al abrir/recargar la p谩gina ===== */
+let init=false;
+auth.onAuthStateChanged(async u=>{
+  if(init)return;init=true;
+  const c=LS.get("kendy_dp_code");
+  if(!c){showGate("");if(u){try{await u.delete()}catch(e){}}return}
+  const last=+LS.get("kendy_dp_last")||0;
+  if(u&&Date.now()-last<AWAY){
+    code=c;
+    try{await db.ref("codigos/"+c+"/last").set(TS);LS.set("kendy_dp_last",String(Date.now()));startSession()}
+    catch(e){closeSession("La sesi贸n termin贸. Necesitas un c贸digo nuevo.")}
+  }else{
+    closeSession("La sesi贸n se cerr贸. Necesitas un c贸digo nuevo.");
+  }
+});
 </script>
 </body>
-</html>
+      </html>
+      
