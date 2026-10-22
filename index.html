@@ -3,202 +3,335 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Kendy mods - Descargas</title>
+<title>Kendy mods</title>
+<!-- se abren las conexiones a los anuncios y a Firebase desde el principio, para que carguen más rápido -->
+<link rel="preconnect" href="https://al5sm.com" crossorigin>
+<link rel="preconnect" href="https://nap5k.com" crossorigin>
+<link rel="preconnect" href="https://n6wxm.com" crossorigin>
+<link rel="preconnect" href="https://5gvci.com" crossorigin>
+<link rel="dns-prefetch" href="https://www.gstatic.com">
+<link rel="dns-prefetch" href="https://kendy-57bcd-default-rtdb.firebaseio.com">
+<link rel="dns-prefetch" href="https://picsum.photos">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,Arial,sans-serif;background:#0f1020;color:#eee;line-height:1.6}
-header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;font-weight:800}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:800}
+header span.p{background:#0008;padding:4px 12px;border-radius:20px;font-size:14px}
 main{max-width:720px;margin:auto;padding:16px}
-h2{margin:16px 0 12px;color:#ffd54f;text-align:center}
-.txt{background:#1b1c35;border-radius:14px;padding:18px;margin-bottom:14px}
-.txt img{max-width:100%;border-radius:10px;margin:8px 0}
-button,.btn{display:block;width:100%;max-width:420px;margin:12px auto;padding:16px;border:0;border-radius:12px;font-size:18px;font-weight:800;color:#fff;text-decoration:none;text-align:center;cursor:pointer;background:linear-gradient(90deg,#00c853,#00b0ff)}
-button:disabled{background:#555;color:#bbb}
+h2{margin:12px 0;color:#ffd54f}
+.card{background:#1b1c35;border-radius:14px;padding:14px;margin:16px 0;box-shadow:0 2px 10px #0006}
+.card img{width:100%;border-radius:10px;display:block;margin-bottom:10px;background:#333;aspect-ratio:7/4;height:auto;object-fit:cover}
+.card h3{color:#4dd0e1;margin-bottom:6px}
+.act{text-align:center;margin:30px 0 90px}
+button,.btn{display:block;width:100%;max-width:360px;margin:12px auto;padding:16px;border:0;border-radius:12px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;text-decoration:none;text-align:center;background:linear-gradient(90deg,#00c853,#00b0ff)}
+button:disabled{background:#555;color:#bbb;cursor:not-allowed}
 .yt{background:linear-gradient(90deg,#ff1744,#d50000)}
-.dl{background:linear-gradient(90deg,#2979ff,#7c4dff)}
-.modal{display:none;position:fixed;inset:0;z-index:50;background:#000d;align-items:center;justify-content:center;padding:20px}
-.modal div{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:380px;text-align:center}
-.modal p{margin:10px 0}
-.wa{position:fixed;right:16px;bottom:16px;z-index:10;width:60px;height:60px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;font-size:30px;text-decoration:none;box-shadow:0 4px 14px #0008}
+.mf{background:linear-gradient(90deg,#2979ff,#7c4dff)}
+#dl{display:none}
+.dlcd{text-align:center;font-weight:800;font-size:18px;color:#ffd54f;background:#1b1c35;border:2px solid #ff3d71;border-radius:12px;padding:10px 14px;margin:10px auto 6px;max-width:360px}
+.wa{position:fixed;right:16px;bottom:16px;z-index:10;width:60px;height:60px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px #0008}
+.wa svg{width:34px;height:34px;fill:#fff}
 footer{text-align:center;padding:20px;color:#888;font-size:13px}
+#gate{display:none;position:fixed;inset:0;z-index:99999;background:rgba(5,5,15,.94);align-items:center;justify-content:center;padding:20px}
+.gbox{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:380px;text-align:center}
+.gbox h2{color:#ff5c8a}.gbox p{margin:10px 0}#gmsg{color:#ffd54f;min-height:22px}
+.dlb{margin:20px auto}
+/* espacio de anuncio de tamaño FIJO: lo que cargue dentro no empuja ni mueve el resto de la página */
+.adslot{height:100px;overflow:hidden;contain:strict;margin:16px 0;text-align:center;display:flex;align-items:center;justify-content:center;padding:0 16px;border:2px dashed #ff3d71;border-radius:14px;background:#1b1c35;color:#ffd54f;font-weight:800;font-size:17px;line-height:1.3;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.adslot::before{content:"📢 Publicidad · Tu toque apoya a Kendy mods"}
+/* la barra de scroll siempre ocupa su sitio: si un anuncio bloquea/desbloquea el scroll, la página no salta */
+html{scrollbar-gutter:stable;overflow-anchor:none;-webkit-text-size-adjust:100%}
 </style>
 </head>
 <body>
-<header>🔥 Kendy mods · Descargas</header>
-<main><div id="app"></div></main>
+<header><div>🔥 Kendy mods</div><span class="p" id="prog">1/6</span></header>
+<main>
+<div id="steps">
+  <h2 id="title"></h2>
+  <div id="content"></div>
+  <div class="act" id="act"></div>
+</div>
+<div id="dl">
+  <h2>✅ ¡Listo! Descarga tus APK y archivos</h2>
+  <div class="dlcd" id="dlcd"></div>
+  <div id="dlList"></div>
+</div>
+</main>
 <footer>© Kendy mods</footer>
 
-<div class="modal" id="block"><div>
-  <h2 style="margin-top:0">⚠ Desactiva el bloqueador</h2>
-  <p>Detectamos un bloqueador de anuncios o DNS. Desactívalo para continuar.</p>
-  <button id="retry">Reintentar</button>
-</div></div>
-
-<a class="wa" href="https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script>
-/* ===== ESTADÍSTICAS (se ven en /stadistik) ===== */
-(function(){
-  const ZONA="America/Lima";
-  if(!firebase.apps.length)firebase.initializeApp({
-    apiKey:"AIzaSyAWr9YM0YAG0mx0SEk3qNEhjeS1MOu_2lg",
-    authDomain:"kendy-57bcd.firebaseapp.com",
-    databaseURL:"https://kendy-57bcd-default-rtdb.firebaseio.com",
-    projectId:"kendy-57bcd",
-    appId:"1:678778497788:web:e1459854025fd4a1f98579"
-  });
-  const db=firebase.database();
-  window.kTrack=function(n){try{
-    const day=new Date().toLocaleDateString("en-CA",{timeZone:ZONA});
-    let sid=localStorage.getItem("k_sid"),last=+localStorage.getItem("k_paso")||0;
-    if(!sid||localStorage.getItem("k_day")!==day||(n===1&&last>1)){
-      sid=Math.random().toString(36).slice(2,12);last=0;
-      localStorage.setItem("k_sid",sid);localStorage.setItem("k_day",day);
-    }
-    if(n>last){
-      localStorage.setItem("k_paso",n);
-      db.ref("stats/"+day+"/"+sid).set({paso:n,t:firebase.database.ServerValue.TIMESTAMP});
-    }
-  }catch(e){}};
-})();
-</script>
+<a class="wa" href="https://whatsapp.com/channel/0029Vb9K8MS6xCSIyFjwCv40" target="_blank" rel="noopener" aria-label="WhatsApp">
+<svg viewBox="0 0 32 32"><path d="M16 3C9 3 3.4 8.6 3.4 15.5c0 2.3.6 4.4 1.7 6.3L3 29l7.4-2c1.8 1 3.800 1.500 5.600 1.500 7 0 12.600-5.600 12.600-12.500S23 3 16 3zm0 22.800c-1.800 0-3.500-.5-5-1.400l-.4-.2-4.400 1.200 1.200-4.300-.3-.4a10 10 0 0 1-1.500-5.300C5.600 9.900 10.300 5.300 16 5.300s10.400 4.600 10.400 10.200S21.700 25.800 16 25.800zm5.700-7.500c-.3-.2-1.800-.9-2.100-1-.3-.1-.5-.2-.7.200s-.8 1-1 1.200c-.2.200-.4.200-.7.100-.3-.2-1.300-.5-2.500-1.500-.9-.8-1.500-1.800-1.700-2.100-.2-.3 0-.5.100-.6l.5-.5c.1-.2.200-.3.300-.5.100-.2.100-.4 0-.5l-1-2.300c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.100-.8.400-.3.300-1.100 1-1.100 2.600s1.100 3 1.300 3.200c.2.200 2.200 3.400 5.400 4.700 3.200 1.300 3.200.9 3.800.8.600-.1 1.800-.7 2.100-1.500.3-.7.300-1.300.2-1.500-.1-.2-.3-.3-.6-.4z"/></svg>
+</a>
 
 <script>
-/* ===== CONFIGURA AQUÍ ===== */
-const T1=10, T2=10;          /* las dos cuentas regresivas de cada paso (segundos) */
-const AWAY=15000;            /* salir de la web 15 s o más reinicia todo */
-const FINAL=20;              /* cuenta oculta en descargas antes de reiniciar (segundos) */
-const YT="https://youtube.com/@kendymods?si=2CoZ_dAt9j_QMCiT";
-const TURNSTILE_KEY="0x4AAAAAAFVNigVcrSGtaVzD";
-
-/* Botones de descarga: agrega más al FINAL de la lista y saldrán ARRIBA en la web */
-const DESCARGAS=[
-  {n:"⬇ Descargar Free Fire MOD", u:"https://www.mediafire.com/"}
-];
-
-/* Texto e imágenes de cada paso (reemplaza con los tuyos) */
-const PASOS=[
-  "<p>Aquí va el texto e imágenes del paso 1.</p>",
-  "<p>Aquí va el texto e imágenes del paso 2.</p>",
-  "<p>Aquí va el texto e imágenes del paso 3.</p>",
-  "<p>Aquí va el texto e imágenes del paso 4.</p>",
-  "<p>Aquí va el texto e imágenes del paso 5.</p>",
-  "<p>Aquí va el texto e imágenes del paso 6. Entra al canal de YouTube y vuelve para continuar.</p>"
-];
-
-/* ===== LÓGICA ===== */
+const TOTAL=6;
+const YT_URL="https://youtube.com/@kendymods?si=2CoZ_dAt9j_QMCiT";
+const titles=["Bienvenido a Kendy mods","Todo para Free Fire","Paneles y configuraciones","Trucos y consejos","Actualizaciones y novedades","Último paso: ¡Sígueme!"];
+const heads=["Mods exclusivos","Sensibilidad perfecta","Paneles listos","Archivos seguros","Siempre actualizado","Comunidad Kendy","Guías fáciles","Soporte","Novedades","Consejos pro"];
+const lorem="Aquí encontrarás archivos, mods, paneles y configuraciones para Free Fire y mucho más. Lee con calma cada parte, sigue los pasos y prepara tu dispositivo antes de descargar. Todo el contenido se actualiza con frecuencia para que siempre tengas lo último. Recuerda hacer copia de seguridad y compartir la web con tus amigos para que no se pierdan nada.";
+let part=1, yt=false;
 const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const safeUrl=u=>/^https?:\/\//i.test(u)?u:"#";
-
-let paso=1,fase=0,resto=T1,ytClick=false,ytOk=false,enDesc=false,fin=FINAL;
-let turnOk=false,bloqueado=false,hiddenAt=0,last=Date.now();
-
-function reset(){
-  paso=1;fase=0;resto=T1;ytClick=false;ytOk=false;enDesc=false;fin=FINAL;
-  kTrack(1);render();
+/* ===== FIREBASE: la lista de descargas se lee de la base de datos (se edita desde /admin) ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAWr9YM0YAG0mx0SEk3qNEhjeS1MOu_2lg",
+  authDomain: "kendy-57bcd.firebaseapp.com",
+  databaseURL: "https://kendy-57bcd-default-rtdb.firebaseio.com",
+  projectId: "kendy-57bcd",
+  storageBucket: "kendy-57bcd.firebasestorage.app",
+  messagingSenderId: "678778497788",
+  appId: "1:678778497788:web:e1459854025fd4a1f98579",
+  measurementId: "G-Z3GD2Y1588"
+};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function safeUrl(u){return /^https?:\/\//i.test(u)?u:"#"}
+function renderDl(list){
+  $("dlList").innerHTML=list.length
+    ? list.map(b=>`<a class="btn mf dlb" href="${esc(safeUrl(b[1]))}" target="_blank" rel="noopener">${esc(b[0])}</a>`).join("")
+    : '<p style="text-align:center;color:#aaa">Aún no hay descargas.</p>';
+}
+/* 1) se muestra al instante lo último guardado en el dispositivo */
+let cached=null;
+try{cached=JSON.parse(localStorage.getItem("kendy_dl"))}catch(e){}
+renderDl(Array.isArray(cached)?cached:[]);
+/* 2) luego se actualiza en vivo desde Firebase. Firebase se descarga EN SEGUNDO PLANO (después de que la
+      página y los anuncios ya arrancaron), así no retrasa los botones ni los anuncios. */
+function loadScript(src){
+  return new Promise((ok,fail)=>{
+    const s=document.createElement("script");
+    s.src=src;s.onload=ok;s.onerror=fail;
+    document.head.appendChild(s);
+  });
+}
+let fbTries=0;
+function initFirebase(){
+  loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js")
+    .then(()=>loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"))
+    .then(()=>{
+      firebase.initializeApp(firebaseConfig);
+      firebase.database().ref("descargas").on("value",snap=>{
+        const arr=[];
+        snap.forEach(ch=>{const v=ch.val();if(v&&v.name&&v.url)arr.push([v.name,v.url,v.ts||0])});
+        arr.sort((a,b)=>b[2]-a[2]);
+        renderDl(arr);
+        try{localStorage.setItem("kendy_dl",JSON.stringify(arr))}catch(e){}
+      },()=>{});
+    })
+    .catch(()=>{if(++fbTries<3)setTimeout(initFirebase,2500)});
 }
 
-function render(){
-  const app=$("app");
-  if(enDesc){
-    app.innerHTML="<h2>⬇ Todas las descargas</h2>"+
-      DESCARGAS.slice().reverse().map(d=>`<a class="btn dl" href="${esc(safeUrl(d.u))}" target="_blank" rel="noopener">${esc(d.n)}</a>`).join("");
+const KEY="kendy_state";
+let st={part:1,stage:"cd1",end:0}, timer=null, shown=0;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.part>=1&&x.part<=TOTAL){st=x;if(["tap","ad","verify","cd"].includes(st.stage)){st.stage="cd1";st.end=0}}}catch(e){}}
+function reset(){st={part:1,stage:"cd1",end:0};save();}
+
+function buildContent(){
+  $("prog").textContent=st.part+"/"+TOTAL;
+  $("title").textContent=titles[st.part-1];
+  let h='<div class="adslot" data-pos="top"></div>';
+  for(let i=0;i<9;i++){
+    if(i===5)h+='<div class="adslot" data-pos="mid"></div>';
+    h+=`<div class="card"><img loading="lazy" decoding="async" src="https://picsum.photos/seed/kendy${st.part}-${i}/700/400" alt=""><h3>${heads[(i+st.part)%heads.length]}</h3><p>${lorem}</p><p>${lorem}</p></div>`;
+  }
+  h+='<div class="adslot" data-pos="bottom"></div>';
+  $("content").innerHTML=h;
+  fillAdSlots();
+  window.scrollTo(0,0);
+  shown=st.part;
+}
+function btn(text,cls,fn,disabled){
+  const b=document.createElement("button");
+  b.textContent=text;b.className=cls||"";b.disabled=!!disabled;
+  if(fn)b.onclick=fn;
+  $("act").innerHTML="";$("act").appendChild(b);
+  return b;
+}
+/* cuenta regresiva basada en la hora real: no se reinicia aunque salgas a un anuncio o la página se recargue */
+function runCd(done,ms){
+  if(!st.end){st.end=Date.now()+(ms||10000);save();}
+  const b=btn("","",null,true);
+  const tick=()=>{
+    const r=Math.ceil((st.end-Date.now())/1000);
+    if(r<=0){clearInterval(timer);done();}
+    else b.textContent="Espera "+r+"s";
+  };
+  if(Math.ceil((st.end-Date.now())/1000)<=0){done();return;}
+  tick();timer=setInterval(tick,250);
+}
+function next(stage,end){st.stage=stage;st.end=end||0;save();go();}
+
+function go(){
+  clearInterval(timer);
+  if(st.stage==="dl"){
+    $("steps").style.display="none";$("dl").style.display="block";$("prog").textContent="✔";
+    /* cuenta regresiva VISIBLE basada en la hora real (st.end guardado en el dispositivo):
+       sigue corriendo aunque la persona salga de la web, cambie de pestaña o cierre y vuelva a abrir.
+       Al llegar a cero se reinicia todo a 1/6 sin avisar. */
+    const tick=()=>{
+      const ms=st.end-Date.now();
+      if(ms<=0){clearInterval(timer);reset();location.reload();return}
+      $("dlcd").textContent="⏳ Esta sección se cierra en "+Math.ceil(ms/1000)+"s";
+    };
+    tick();timer=setInterval(tick,250);
     return;
   }
-  app.innerHTML=`<h2>Paso ${paso}/6</h2><div class="txt">${PASOS[paso-1]}</div>`+
-    (paso===1&&!turnOk?'<div id="ts" style="text-align:center"></div>':'')+
-    (paso===6&&fase===2?`<a class="btn yt" id="yt" href="${YT}" target="_blank" rel="noopener">▶ Entrar al canal de YouTube</a>`:'')+
-    '<button id="nx"></button>';
-  $("nx").onclick=next;
-  if($("yt"))$("yt").onclick=()=>{ytClick=true};
-  if($("ts"))drawTurnstile();
-  upd();
-}
-
-function upd(){
-  const b=$("nx");if(!b)return;
-  if(paso===1&&!turnOk){b.disabled=true;b.textContent="Verifica que eres humano";return}
-  if(fase<2){b.disabled=true;b.textContent="Espera "+Math.ceil(resto)+"s"}
-  else if(paso===6&&!ytOk){b.disabled=true;b.textContent="Primero entra a YouTube y vuelve"}
-  else{b.disabled=false;b.textContent="Continuar"}
-}
-
-function next(){
-  if(paso<6){paso++;fase=0;resto=T1;kTrack(paso);render()}
-  else{enDesc=true;fin=FINAL;kTrack(7);render()}
-}
-
-/* reloj: solo cuenta mientras la página está visible, así que ir a un anuncio y volver no reinicia nada */
-setInterval(()=>{
-  const now=Date.now(),dt=(now-last)/1000;last=now;
-  if(document.hidden||bloqueado)return;
-  if(enDesc){fin-=dt;if(fin<=0)reset();return}
-  if(fase>=2)return;
-  if(paso===1&&!turnOk)return;
-  resto-=dt;
-  if(resto<=0){
-    fase++;
-    if(fase===1)resto=T2;else{resto=0;render();return}
+  $("dl").style.display="none";$("steps").style.display="block";
+  if(shown!==st.part)buildContent();
+  else $("prog").textContent=st.part+"/"+TOTAL;
+  if(st.stage==="cd1")runCd(()=>next("ready"),10000);          /* 1) cuenta 10 s */
+  else if(st.stage==="ready")btn("👉 Toca aquí","",()=>next("cd2"));   /* 2) se habilita el botón */
+  else if(st.stage==="cd2")runCd(()=>next("final"),15000);      /* 3) cuenta 15 s y luego aparece Continuar */
+  else if(st.stage==="final"){
+    if(st.part<TOTAL)btn("Continuar ➜","",()=>{st.part++;next("cd1");});
+    else btn("▶ Seguir en YouTube","yt",()=>{
+      let left=false;
+      const clean=()=>{document.removeEventListener("visibilitychange",chk);window.removeEventListener("focus",chk);window.removeEventListener("blur",out)};
+      const out=()=>{left=true};
+      const chk=()=>{
+        if(document.visibilityState==="hidden"){left=true;return}
+        if(left){clean();next("ytready");}
+      };
+      st.stage="yt";save();
+      window.addEventListener("blur",out);
+      document.addEventListener("visibilitychange",chk);
+      window.addEventListener("focus",chk);
+      window.open(YT_URL,"_blank");
+    });
   }
-  upd();
-},250);
-
-/* salir de la web 15 s o más reinicia todo (la visita a YouTube del paso 6 no cuenta) */
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){hiddenAt=Date.now();return}
-  last=Date.now();
-  if(paso===6&&ytClick&&!ytOk){ytOk=true;hiddenAt=0;upd();return}
-  if(hiddenAt&&Date.now()-hiddenAt>=AWAY)reset();
-  hiddenAt=0;
-});
-
-/* ===== Turnstile (Cloudflare) ===== */
-function drawTurnstile(){
-  if(window.turnstile){
-    turnstile.render("#ts",{sitekey:TURNSTILE_KEY,theme:"dark",callback:()=>{turnOk=true;const t=$("ts");if(t)t.remove();upd()}});
-  }else{setTimeout(()=>{if($("ts"))drawTurnstile()},500)}
+  else if(st.stage==="yt")next("ytready");
+  else if(st.stage==="ytready")btn("✅ Ver descargas","",()=>{st.stage="dl";st.end=Date.now()+DL_MS;save();location.reload();});
 }
-const tsScript=document.createElement("script");
-tsScript.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-tsScript.async=true;document.head.appendChild(tsScript);
+/* ===== SI SALES DE LA WEB 15 SEGUNDOS O MÁS, SE REINICIA TODO (excepto al ir a YouTube) ===== */
+const AWAY=15000;
+const DL_MS=15000;   /* tiempo que dura la sección de descargas (cuenta regresiva visible) */
+function markAway(){if(st.stage==="yt"||st.stage==="dl")return;try{localStorage.setItem("kendy_away",String(Date.now()))}catch(e){}}
+function checkAway(){
+  let t=0;
+  try{t=+localStorage.getItem("kendy_away")||0;localStorage.removeItem("kendy_away")}catch(e){}
+  /* en la sección de descargas manda solo su propia cuenta regresiva, no esta regla */
+  if(t&&Date.now()-t>=AWAY&&st.stage!=="yt"&&st.stage!=="dl"){reset();shown=0;go();}
+}
+document.addEventListener("visibilitychange",()=>{document.visibilityState==="hidden"?markAway():checkAway()});
+window.addEventListener("pagehide",markAway);
+load();
+if(st.stage==="yt")st.stage="ytready";
+/* si cerró la web con las descargas abiertas y ya se acabó el tiempo, vuelve a 1/6 sin avisar */
+if(st.stage==="dl"&&!(st.end>Date.now())){reset();try{localStorage.removeItem("kendy_away")}catch(e){}}
+checkAway();
+/* ===== ANUNCIOS: 3 espacios por parte (arriba, en medio y abajo) ===== */
+const ADS=[
+  {zone:"12014639",src:"https://al5sm.com/tag.min.js"},
+  {zone:"12014927",src:"https://nap5k.com/tag.min.js"}
+];
+/* Push Notifications: se carga UNA sola vez por visita (no en cada parte) */
+let pushLoaded=false;
+/* Carga un anuncio y, si el script falla (red lenta, error del servidor), lo REINTENTA hasta 3 veces
+   con una pequeña espera. Así la página casi nunca se queda sin anuncios por un fallo de carga. */
+function addAdScript(parent,src,zone,noCf,tries){
+  tries=tries||0;
+  const s=document.createElement("script");
+  if(zone)s.dataset.zone=zone;
+  if(noCf)s.setAttribute("data-cfasync","false");
+  s.async=true;
+  s.src=tries?src+(src.indexOf("?")>-1?"&":"?")+"r="+Date.now():src;
+  s.onerror=()=>{s.remove();if(tries<3)setTimeout(()=>addAdScript(parent,src,zone,noCf,tries+1),1200*(tries+1))};
+  parent.appendChild(s);
+}
+function loadPush(){
+  if(pushLoaded)return;pushLoaded=true;
+  addAdScript(document.body,"https://5gvci.com/act/files/tag.min.js?z=12034404",null,true);
+}
+function fillAdSlots(){
+  if(st.stage==="dl")return;   /* en la sección de descargas NO se cargan anuncios */
+  loadPush();
+  const order={top:0,mid:1,bottom:0};   /* arriba: anuncio 1, en medio: anuncio 2, abajo: anuncio 1 */
+  document.querySelectorAll("#content .adslot").forEach(slot=>{
+    const ad=ADS[order[slot.dataset.pos]];
+    addAdScript(slot,ad.src,ad.zone);
+  });
+  fillVignettes();
+}
+/* ===== VENTANAS DE ANUNCIO (vignette): 3 por parte =====
+   Una al abrir la parte (arriba), otra al llegar a la mitad y otra al llegar abajo.
+   Cada espacio dispara su ventana la primera vez que se ve en pantalla. */
+const VIGNETTE={zone:"12014841",src:"https://n6wxm.com/vignette.min.js"};
+let vObs=null, vQueue=[], vBusy=false, vLast=0, lastScroll=0;
+const V_GAP=4000;      /* mínimo entre una ventana y la siguiente (así no se piden juntas y no se traba) */
+const V_QUIET=400;     /* se espera a que la persona deje de hacer scroll antes de pedir la ventana */
+window.addEventListener("scroll",()=>{lastScroll=Date.now()},{passive:true});
+function fireVignette(slot){
+  addAdScript(slot,VIGNETTE.src,VIGNETTE.zone);
+}
+/* saca las ventanas de la cola de una en una, cuando la página está quieta, visible y sin carga */
+function pumpVignettes(){
+  if(vBusy||!vQueue.length)return;
+  vBusy=true;
+  const tryFire=()=>{
+    if(!vQueue.length){vBusy=false;return}
+    const now=Date.now();
+    if(document.visibilityState!=="visible"||now-lastScroll<V_QUIET||now-vLast<V_GAP){setTimeout(tryFire,400);return}
+    const slot=vQueue.shift();
+    const go2=()=>{vLast=Date.now();fireVignette(slot);setTimeout(tryFire,V_GAP)};
+    ("requestIdleCallback" in window)?requestIdleCallback(go2,{timeout:1500}):setTimeout(go2,0);
+  };
+  tryFire();
+}
+function fillVignettes(){
+  if(vObs){vObs.disconnect();vObs=null}
+  vQueue=[];vLast=0;lastScroll=0;   /* al empezar cada parte, la primera ventana sale sin esperar */
+  const slots=document.querySelectorAll("#content .adslot");
+  if(!("IntersectionObserver" in window)){vQueue=Array.from(slots);pumpVignettes();return}
+  vObs=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){vObs.unobserve(e.target);vQueue.push(e.target);pumpVignettes()}
+  }),{threshold:0.1});
+  slots.forEach(sl=>vObs.observe(sl));
+}
+go();
+initFirebase();   /* Firebase se carga ahora, ya con la página y los anuncios en marcha */
 
-/* ===== Anuncios y detector de bloqueo ===== */
+/* ===== DETECTOR DE BLOQUEO DE ANUNCIOS / DNS ===== */
 const AD_URL="https://al5sm.com/tag.min.js";
-function bait(){
-  const d=document.createElement("div");
-  d.className="adsbox ad-banner pub_300x250";
-  d.style.cssText="position:absolute;left:-999px;height:10px;width:10px";
-  document.body.appendChild(d);
-  const b=!d.offsetHeight||getComputedStyle(d).display==="none";
-  d.remove();return b;
+const gate=document.createElement("div");
+gate.id="gate";
+gate.innerHTML='<div class="gbox"><h2>🚫 Bloqueo detectado</h2><p>Detectamos un bloqueador de anuncios, un DNS privado que los bloquea o que no hay internet. Desactívalo para esta página y toca Reintentar para continuar.</p><p id="gmsg"></p><button id="gretry">🔄 Reintentar</button></div>';
+document.body.appendChild(gate);
+let checking=false, wasBlocked=false;
+async function isBlocked(){
+  const bait=document.createElement("div");
+  bait.className="adsbox ad-banner pub_300x250";
+  bait.style.cssText="position:absolute;left:-999px;top:0;width:10px;height:10px";
+  document.body.appendChild(bait);
+  await new Promise(r=>setTimeout(r,120));
+  const cs=getComputedStyle(bait);
+  const hid=bait.offsetHeight===0||cs.display==="none"||cs.visibility==="hidden";
+  bait.remove();
+  if(hid)return true;
+  try{await fetch(AD_URL+"?t="+Date.now(),{mode:"no-cors",cache:"no-store"});return false;}
+  catch(e){return true;}
 }
-function setBlock(b){
-  if(b&&!bloqueado){
-    bloqueado=true;$("block").style.display="flex";
-    reset();   /* si activan el bloqueo a mitad de uso, vuelve al 1/6 */
-  }else if(!b&&bloqueado){bloqueado=false;$("block").style.display="none";last=Date.now()}
+let epoch=0, graceUntil=0;
+/* al salir/volver (anuncio) se ignoran las verificaciones en curso y se espera 3s */
+document.addEventListener("visibilitychange",()=>{epoch++;graceUntil=Date.now()+3000;});
+async function check(manual){
+  if(checking||st.stage==="dl")return;
+  if(!manual&&(document.visibilityState!=="visible"||Date.now()<graceUntil))return;
+  checking=true;
+  if(!document.body.contains(gate))document.body.appendChild(gate);
+  const e0=epoch;
+  let b=await isBlocked();
+  if(b){await new Promise(r=>setTimeout(r,1500));b=await isBlocked();}   /* hay que confirmarlo 2 veces */
+  if(epoch!==e0||document.visibilityState!=="visible"){checking=false;return;}  /* si se fue a un anuncio, se ignora */
+  gate.style.display=b?"flex":"none";
+  document.body.style.overflow=b?"hidden":"";
+  if(b&&!wasBlocked){reset();shown=0;go();}   /* bloqueo detectado: todo vuelve a 1/6 */
+  if(!b&&wasBlocked){reset();shown=0;go();}   /* ya sin bloqueo: empieza de cero */
+  wasBlocked=b;
+  $("gmsg").textContent=(b&&manual)?"Todavía se detecta el bloqueo. Intenta de nuevo.":"";
+  checking=false;
 }
-const ad=document.createElement("script");
-ad.src=AD_URL;ad.dataset.zone="12014639";ad.async=true;
-ad.onerror=()=>setBlock(true);
-document.head.appendChild(ad);
-
-$("retry").onclick=async()=>{
-  $("retry").disabled=true;
-  let blocked=bait();
-  if(!blocked){try{await fetch(AD_URL,{mode:"no-cors",cache:"no-store"})}catch(e){blocked=true}}
-  $("retry").disabled=false;
-  setBlock(blocked);
-};
-setInterval(()=>{if(!bloqueado&&bait())setBlock(true)},5000);
-
-/* ===== inicio ===== */
-kTrack(1);
-render();
+$("gretry").onclick=()=>{$("gmsg").textContent="Verificando...";check(true);};
+check();
+setInterval(check,4000);
 </script>
 </body>
 </html>
