@@ -11,37 +11,40 @@ body{font-family:system-ui,Arial,sans-serif;background:#0f1020;color:#eee;line-h
 header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
 header button{width:auto;margin:0;padding:6px 14px;font-size:14px;background:#0008}
 main{max-width:720px;margin:auto;padding:16px}
-h2{margin:20px 0 10px;color:#ffd54f;font-size:18px}
+h2{margin:22px 0 10px;color:#ffd54f}
 .box{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:400px;margin:40px auto;text-align:center}
-input{width:100%;padding:14px;margin:8px 0;border-radius:10px;border:1px solid #555;background:#0f1020;color:#fff;font-size:16px;text-align:center}
-button{display:block;width:100%;padding:14px;margin:8px 0;border:0;border-radius:12px;font-size:17px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(90deg,#00c853,#00b0ff)}
+input,select{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #555;background:#0f1020;color:#fff;font-size:16px}
+button{display:block;width:100%;padding:12px;margin:8px 0;border:0;border-radius:12px;font-size:16px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(90deg,#00c853,#00b0ff)}
 button:disabled{background:#555;color:#bbb}
-#amsg{color:#ffd54f;min-height:24px}
+#amsg{color:#ffd54f;min-height:22px}
+.small{color:#aaa;font-size:13px}
 #panel{display:none}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.card{background:#1b1c35;border-radius:14px;padding:14px 8px;text-align:center}
-.card b{display:block;font-size:30px;line-height:1.1}
-.card span{font-size:12px;color:#aaa}
-.ok b{color:#00e676}.no b{color:#ff8a80}
-.row{margin:10px 0}
-.row .l{display:flex;justify-content:space-between;font-size:14px;margin-bottom:3px}
-.bar{height:14px;background:#1b1c35;border-radius:8px;overflow:hidden}
-.bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#ff3d71,#7c4dff);min-width:0}
-.bar i.g{background:linear-gradient(90deg,#00c853,#00b0ff)}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:#1b1c35;border-radius:12px;padding:12px 14px}
+.kpi b{display:block;font-size:26px;color:#fff}
+.kpi span{color:#aaa;font-size:13px}
+.kpi.ok b{color:#00e676}
+.bar{margin:8px 0}
+.bar .top{display:flex;justify-content:space-between;font-size:14px}
+.bar .track{height:12px;background:#1b1c35;border-radius:6px;overflow:hidden;margin-top:3px}
+.bar .fill{height:100%;background:linear-gradient(90deg,#ff3d71,#7c4dff);min-width:2px}
+.bar.done .fill{background:linear-gradient(90deg,#00c853,#00b0ff)}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:9px 6px;text-align:center;border-bottom:1px solid #2a2b4a}
-th{color:#aaa;font-weight:600;font-size:12px}
-td:first-child,th:first-child{text-align:left}
-tr.d{cursor:pointer}
+th,td{padding:8px 6px;text-align:right;border-bottom:1px solid #2a2b4a}
+th:first-child,td:first-child{text-align:left}
+th{color:#ffd54f;font-weight:700}
 tr.sel td{background:#26274a}
-.small{color:#aaa;font-size:12px;text-align:center;margin:16px 0}
+tbody tr{cursor:pointer}
+.wrap{overflow-x:auto}
 </style>
 </head>
 <body>
 <header><div>📊 Kendy mods · Estadísticas</div><button id="out" style="display:none">Salir</button></header>
 <main>
   <div id="gate" class="box">
-    <h2 style="margin-top:0">🔒 Solo admin</h2>
+    <h2 style="margin-top:0">🔑 Solo admin</h2>
     <input id="aem" type="email" placeholder="Correo" autocomplete="username">
     <input id="apw" type="password" placeholder="Contraseña" autocomplete="current-password">
     <button id="alogin">Entrar</button>
@@ -49,22 +52,30 @@ tr.sel td{background:#26274a}
   </div>
 
   <div id="panel">
-    <h2 id="tit">Hoy</h2>
-    <div class="cards">
-      <div class="card"><b id="n_tot">0</b><span>Entraron</span></div>
-      <div class="card ok"><b id="n_ok">0</b><span>Completaron</span></div>
-      <div class="card no"><b id="n_no">0</b><span>No completaron</span></div>
+    <div class="row">
+      <select id="range">
+        <option value="7">Últimos 7 días</option>
+        <option value="14" selected>Últimos 14 días</option>
+        <option value="30">Últimos 30 días</option>
+        <option value="90">Últimos 90 días</option>
+      </select>
+      <select id="day"></select>
     </div>
 
-    <h2>¿Dónde se quedaron?</h2>
-    <div id="steps"></div>
+    <h2 id="dtitle">Hoy</h2>
+    <div class="kpis" id="kpis"></div>
 
-    <h2>Últimos días <span class="small" style="margin:0">(toca uno para verlo)</span></h2>
-    <table>
-      <thead><tr><th>Día</th><th>Entraron</th><th>Completaron</th><th>No</th><th>%</th></tr></thead>
-      <tbody id="days"></tbody>
-    </table>
-    <p class="small">Se actualiza solo en tiempo real.</p>
+    <h2>¿Dónde se quedó la gente?</h2>
+    <div id="steps"></div>
+    <p class="small">Cada persona cuenta una sola vez, en el paso más lejano al que llegó ese día.</p>
+
+    <h2>Por día</h2>
+    <div class="wrap">
+      <table>
+        <thead><tr><th>Día</th><th>Visitas</th><th>Completaron</th><th>%</th><th>Descargas</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
   </div>
 </main>
 
@@ -85,89 +96,84 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.database();
 const $=id=>document.getElementById(id);
+const DIAS=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 
-const ZONA="America/Lima";   /* zona horaria con la que se corta cada día */
-const DIAS=14;               /* cuántos días se muestran */
+let data={}, sel=null, q=null;
 
-const hoy=()=>new Date().toLocaleDateString("en-CA",{timeZone:ZONA});
-function nombreDia(k){
-  if(k===hoy())return "Hoy";
-  return new Date(k+"T12:00:00").toLocaleDateString("es",{weekday:"short",day:"numeric",month:"short"});
-}
-function ultimosDias(){
-  const out=[];const base=new Date(hoy()+"T12:00:00Z");
-  for(let i=0;i<DIAS;i++){const d=new Date(base);d.setUTCDate(d.getUTCDate()-i);out.push(d.toISOString().slice(0,10))}
-  return out;
-}
-
-let data={}, sel=hoy(), ref=null;
-
-/* c[1..6] = se quedaron en ese paso, c[7] = completaron */
-function contar(dia){
-  const c=[0,0,0,0,0,0,0,0];
-  Object.values(data[dia]||{}).forEach(v=>{
-    const p=Math.min(7,Math.max(1,Math.floor(+v.paso)||1));c[p]++;
+function todayKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function label(k){const [y,m,d]=k.split("-").map(Number);return DIAS[new Date(y,m-1,d).getDay()]+" "+d+"/"+m}
+function sumDay(v){
+  const o={vis:0,comp:0,desc:0,rein:0,bloq:0,movil:0,pc:0,pasos:[0,0,0,0,0,0,0]};
+  Object.values(v||{}).forEach(r=>{
+    if(!r||typeof r!=="object")return;
+    o.vis++;
+    if(r.completo){o.comp++}else{const p=Math.min(6,Math.max(0,+r.paso||0));o.pasos[p]++}
+    o.desc+=+r.descargas||0;o.rein+=+r.reinicios||0;
+    if(r.bloqueo)o.bloq++;
+    if(r.dev==="pc")o.pc++;else o.movil++;
   });
-  return c;
+  return o;
 }
-const total=c=>c.slice(1).reduce((a,b)=>a+b,0);
+const pct=(a,b)=>b?Math.round(a*100/b)+"%":"0%";
 
-function render(){
-  const c=contar(sel), t=total(c), ok=c[7], no=t-ok;
-  $("tit").textContent=nombreDia(sel)+" · "+sel;
-  $("n_tot").textContent=t;$("n_ok").textContent=ok;$("n_no").textContent=no;
+function draw(){
+  const keys=Object.keys(data).sort().reverse();
+  const today=todayKey();
+  if(!keys.includes(today))keys.unshift(today);
+  if(!sel||!keys.includes(sel))sel=today;
+  $("day").innerHTML=keys.map(k=>`<option value="${k}"${k===sel?" selected":""}>${label(k)}${k===today?" (hoy)":""}</option>`).join("");
 
-  let h="";
-  for(let p=1;p<=6;p++){
-    h+=`<div class="row"><div class="l"><span>Se quedaron en ${p}/6</span><b>${c[p]}</b></div><div class="bar"><i style="width:${t?c[p]/t*100:0}%"></i></div></div>`;
-  }
-  h+=`<div class="row"><div class="l"><span>✅ Completaron (descargas)</span><b>${ok}</b></div><div class="bar"><i class="g" style="width:${t?ok/t*100:0}%"></i></div></div>`;
-  $("steps").innerHTML=h;
+  const s=sumDay(data[sel]);
+  $("dtitle").textContent=label(sel)+(sel===today?" (hoy)":"");
+  $("kpis").innerHTML=
+    `<div class="kpi"><b>${s.vis}</b><span>personas entraron</span></div>`+
+    `<div class="kpi ok"><b>${s.comp}</b><span>completaron todo (${pct(s.comp,s.vis)})</span></div>`+
+    `<div class="kpi"><b>${s.vis-s.comp}</b><span>no terminaron</span></div>`+
+    `<div class="kpi"><b>${s.desc}</b><span>clics en descargas</span></div>`+
+    `<div class="kpi"><b>${s.rein}</b><span>reinicios por salir</span></div>`+
+    `<div class="kpi"><b>${s.bloq}</b><span>con bloqueador de anuncios</span></div>`+
+    `<div class="kpi"><b>${s.movil}</b><span>desde celular</span></div>`+
+    `<div class="kpi"><b>${s.pc}</b><span>desde PC</span></div>`;
 
-  $("days").innerHTML=ultimosDias().map(k=>{
-    const d=contar(k), tt=total(d);
-    return `<tr class="d${k===sel?" sel":""}" data-k="${k}"><td>${nombreDia(k)}</td><td>${tt}</td><td style="color:#00e676">${d[7]}</td><td style="color:#ff8a80">${tt-d[7]}</td><td>${tt?Math.round(d[7]/tt*100):0}%</td></tr>`;
-  }).join("");
+  const rows=[["Solo entraron (antes del 1/6)",s.pasos[0]]];
+  for(let i=1;i<=6;i++)rows.push(["Se quedaron en "+i+"/6",s.pasos[i]]);
+  const max=Math.max(1,s.comp,...rows.map(r=>r[1]));
+  $("steps").innerHTML=rows.map(r=>bar(r[0],r[1],s.vis,max,false)).join("")+bar("Completaron todo ✅",s.comp,s.vis,max,true);
+
+  $("rows").innerHTML=keys.map(k=>{const t=sumDay(data[k]);
+    return `<tr data-k="${k}"${k===sel?' class="sel"':""}><td>${label(k)}</td><td>${t.vis}</td><td>${t.comp}</td><td>${pct(t.comp,t.vis)}</td><td>${t.desc}</td></tr>`}).join("");
 }
-$("days").addEventListener("click",e=>{
-  const tr=e.target.closest("tr[data-k]");
-  if(tr){sel=tr.dataset.k;render()}
-});
-
-function iniciar(){
-  $("gate").style.display="none";$("panel").style.display="block";$("out").style.display="block";
-  const desde=ultimosDias().slice(-1)[0];
-  ref=db.ref("stats").orderByKey().startAt(desde);
-  ref.on("value",s=>{data=s.val()||{};render()},()=>salir("No se pudo leer. Revisa las reglas de Firebase."));
-  render();
+function bar(name,n,total,max,done){
+  return `<div class="bar${done?" done":""}"><div class="top"><span>${name}</span><span>${n} · ${pct(n,total)}</span></div><div class="track"><div class="fill" style="width:${Math.round(n*100/max)}%"></div></div></div>`;
 }
-async function salir(msg){
-  try{if(ref)ref.off()}catch(e){}
+
+function listen(){
+  if(q)q.off();
+  q=db.ref("stats").orderByKey().limitToLast(+$("range").value);
+  q.on("value",snap=>{data=snap.val()||{};draw()},()=>out("No se pudo leer. Revisa las reglas de Firebase."));
+}
+function show(){$("gate").style.display="none";$("panel").style.display="block";$("out").style.display="block";listen()}
+async function out(msg){
+  if(q){q.off();q=null}
   $("panel").style.display="none";$("out").style.display="none";$("gate").style.display="block";
-  $("amsg").textContent=msg||"";$("alogin").disabled=false;
+  $("amsg").textContent=msg||"";$("apw").value="";$("alogin").disabled=false;
   try{await auth.signOut()}catch(e){}
 }
 async function login(){
   const em=$("aem").value.trim(), pw=$("apw").value;
   if(!em||!pw){$("amsg").textContent="Escribe correo y contraseña.";return}
   $("alogin").disabled=true;$("amsg").textContent="Entrando...";
-  try{
-    await auth.signInWithEmailAndPassword(em,pw);
-    $("apw").value="";$("amsg").textContent="";$("alogin").disabled=false;
-    iniciar();
-  }catch(e){
-    $("amsg").textContent="Correo o contraseña incorrectos.";$("alogin").disabled=false;
-  }
+  try{await auth.signInWithEmailAndPassword(em,pw);$("amsg").textContent="";$("alogin").disabled=false;show()}
+  catch(e){$("amsg").textContent="Correo o contraseña incorrectos.";$("alogin").disabled=false}
 }
 $("alogin").onclick=login;
 $("apw").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-$("out").onclick=()=>salir("Sesión cerrada.");
+$("out").onclick=()=>out("Sesión cerrada.");
+$("range").onchange=listen;
+$("day").onchange=e=>{sel=e.target.value;draw()};
+$("rows").onclick=e=>{const tr=e.target.closest("tr");if(tr){sel=tr.dataset.k;draw()}};
 
-let init=false;
-auth.onAuthStateChanged(u=>{
-  if(init)return;init=true;
-  if(u&&!u.isAnonymous)iniciar();
-});
+auth.onAuthStateChanged(u=>{if(u&&!u.isAnonymous)show()});
 </script>
 </body>
-                                                                                  </html>
+</html>
