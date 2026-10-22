@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Kendy mods - Estadísticas</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,Arial,sans-serif;background:#0f1020;color:#eee;line-height:1.5}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#ff3d71,#7c4dff);padding:12px 16px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+header button{width:auto;margin:0;padding:6px 14px;font-size:14px;background:#0008}
+main{max-width:720px;margin:auto;padding:16px}
+h2{margin:20px 0 10px;color:#ffd54f;font-size:18px}
+.box{background:#1b1c35;border:2px solid #ff3d71;border-radius:16px;padding:24px;max-width:400px;margin:40px auto;text-align:center}
+input{width:100%;padding:14px;margin:8px 0;border-radius:10px;border:1px solid #555;background:#0f1020;color:#fff;font-size:16px;text-align:center}
+button{display:block;width:100%;padding:14px;margin:8px 0;border:0;border-radius:12px;font-size:17px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(90deg,#00c853,#00b0ff)}
+button:disabled{background:#555;color:#bbb}
+#amsg{color:#ffd54f;min-height:24px}
+#panel{display:none}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{background:#1b1c35;border-radius:14px;padding:14px 8px;text-align:center}
+.card b{display:block;font-size:30px;line-height:1.1}
+.card span{font-size:12px;color:#aaa}
+.ok b{color:#00e676}.no b{color:#ff8a80}
+.row{margin:10px 0}
+.row .l{display:flex;justify-content:space-between;font-size:14px;margin-bottom:3px}
+.bar{height:14px;background:#1b1c35;border-radius:8px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#ff3d71,#7c4dff);min-width:0}
+.bar i.g{background:linear-gradient(90deg,#00c853,#00b0ff)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 6px;text-align:center;border-bottom:1px solid #2a2b4a}
+th{color:#aaa;font-weight:600;font-size:12px}
+td:first-child,th:first-child{text-align:left}
+tr.d{cursor:pointer}
+tr.sel td{background:#26274a}
+.small{color:#aaa;font-size:12px;text-align:center;margin:16px 0}
+</style>
+</head>
+<body>
+<header><div>📊 Kendy mods · Estadísticas</div><button id="out" style="display:none">Salir</button></header>
+<main>
+  <div id="gate" class="box">
+    <h2 style="margin-top:0">🔒 Solo admin</h2>
+    <input id="aem" type="email" placeholder="Correo" autocomplete="username">
+    <input id="apw" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button id="alogin">Entrar</button>
+    <p id="amsg"></p>
+  </div>
+
+  <div id="panel">
+    <h2 id="tit">Hoy</h2>
+    <div class="cards">
+      <div class="card"><b id="n_tot">0</b><span>Entraron</span></div>
+      <div class="card ok"><b id="n_ok">0</b><span>Completaron</span></div>
+      <div class="card no"><b id="n_no">0</b><span>No completaron</span></div>
+    </div>
+
+    <h2>¿Dónde se quedaron?</h2>
+    <div id="steps"></div>
+
+    <h2>Últimos días <span class="small" style="margin:0">(toca uno para verlo)</span></h2>
+    <table>
+      <thead><tr><th>Día</th><th>Entraron</th><th>Completaron</th><th>No</th><th>%</th></tr></thead>
+      <tbody id="days"></tbody>
+    </table>
+    <p class="small">Se actualiza solo en tiempo real.</p>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAWr9YM0YAG0mx0SEk3qNEhjeS1MOu_2lg",
+  authDomain: "kendy-57bcd.firebaseapp.com",
+  databaseURL: "https://kendy-57bcd-default-rtdb.firebaseio.com",
+  projectId: "kendy-57bcd",
+  storageBucket: "kendy-57bcd.firebasestorage.app",
+  messagingSenderId: "678778497788",
+  appId: "1:678778497788:web:e1459854025fd4a1f98579",
+  measurementId: "G-Z3GD2Y1588"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.database();
+const $=id=>document.getElementById(id);
+
+const ZONA="America/Lima";   /* zona horaria con la que se corta cada día */
+const DIAS=14;               /* cuántos días se muestran */
+
+const hoy=()=>new Date().toLocaleDateString("en-CA",{timeZone:ZONA});
+function nombreDia(k){
+  if(k===hoy())return "Hoy";
+  return new Date(k+"T12:00:00").toLocaleDateString("es",{weekday:"short",day:"numeric",month:"short"});
+}
+function ultimosDias(){
+  const out=[];const base=new Date(hoy()+"T12:00:00Z");
+  for(let i=0;i<DIAS;i++){const d=new Date(base);d.setUTCDate(d.getUTCDate()-i);out.push(d.toISOString().slice(0,10))}
+  return out;
+}
+
+let data={}, sel=hoy(), ref=null;
+
+/* c[1..6] = se quedaron en ese paso, c[7] = completaron */
+function contar(dia){
+  const c=[0,0,0,0,0,0,0,0];
+  Object.values(data[dia]||{}).forEach(v=>{
+    const p=Math.min(7,Math.max(1,Math.floor(+v.paso)||1));c[p]++;
+  });
+  return c;
+}
+const total=c=>c.slice(1).reduce((a,b)=>a+b,0);
+
+function render(){
+  const c=contar(sel), t=total(c), ok=c[7], no=t-ok;
+  $("tit").textContent=nombreDia(sel)+" · "+sel;
+  $("n_tot").textContent=t;$("n_ok").textContent=ok;$("n_no").textContent=no;
+
+  let h="";
+  for(let p=1;p<=6;p++){
+    h+=`<div class="row"><div class="l"><span>Se quedaron en ${p}/6</span><b>${c[p]}</b></div><div class="bar"><i style="width:${t?c[p]/t*100:0}%"></i></div></div>`;
+  }
+  h+=`<div class="row"><div class="l"><span>✅ Completaron (descargas)</span><b>${ok}</b></div><div class="bar"><i class="g" style="width:${t?ok/t*100:0}%"></i></div></div>`;
+  $("steps").innerHTML=h;
+
+  $("days").innerHTML=ultimosDias().map(k=>{
+    const d=contar(k), tt=total(d);
+    return `<tr class="d${k===sel?" sel":""}" data-k="${k}"><td>${nombreDia(k)}</td><td>${tt}</td><td style="color:#00e676">${d[7]}</td><td style="color:#ff8a80">${tt-d[7]}</td><td>${tt?Math.round(d[7]/tt*100):0}%</td></tr>`;
+  }).join("");
+}
+$("days").addEventListener("click",e=>{
+  const tr=e.target.closest("tr[data-k]");
+  if(tr){sel=tr.dataset.k;render()}
+});
+
+function iniciar(){
+  $("gate").style.display="none";$("panel").style.display="block";$("out").style.display="block";
+  const desde=ultimosDias().slice(-1)[0];
+  ref=db.ref("stats").orderByKey().startAt(desde);
+  ref.on("value",s=>{data=s.val()||{};render()},()=>salir("No se pudo leer. Revisa las reglas de Firebase."));
+  render();
+}
+async function salir(msg){
+  try{if(ref)ref.off()}catch(e){}
+  $("panel").style.display="none";$("out").style.display="none";$("gate").style.display="block";
+  $("amsg").textContent=msg||"";$("alogin").disabled=false;
+  try{await auth.signOut()}catch(e){}
+}
+async function login(){
+  const em=$("aem").value.trim(), pw=$("apw").value;
+  if(!em||!pw){$("amsg").textContent="Escribe correo y contraseña.";return}
+  $("alogin").disabled=true;$("amsg").textContent="Entrando...";
+  try{
+    await auth.signInWithEmailAndPassword(em,pw);
+    $("apw").value="";$("amsg").textContent="";$("alogin").disabled=false;
+    iniciar();
+  }catch(e){
+    $("amsg").textContent="Correo o contraseña incorrectos.";$("alogin").disabled=false;
+  }
+}
+$("alogin").onclick=login;
+$("apw").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+$("out").onclick=()=>salir("Sesión cerrada.");
+
+let init=false;
+auth.onAuthStateChanged(u=>{
+  if(init)return;init=true;
+  if(u&&!u.isAnonymous)iniciar();
+});
+</script>
+</body>
+                                                                                  </html>
