@@ -89,6 +89,30 @@ const LS={
   set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},
   del:k=>{try{localStorage.removeItem(k)}catch(e){}}
 };
+/* ===== ESTAD脥STICAS (se guardan en Firebase: stats/A脩O-MES-D脥A/visitante) ===== */
+const stat=(()=>{
+  const day=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+  let vid=LS.get("kendy_vid");
+  if(!vid){vid=Math.random().toString(36).slice(2,10)+Date.now().toString(36);LS.set("kendy_vid",vid)}
+  const dev=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)?"movil":"pc";
+  const ref=()=>db.ref("stats/"+day()+"/"+vid);
+  const off=()=>typeof admin!=="undefined"&&admin;
+  const safe=p=>{try{Promise.resolve(p).catch(()=>{})}catch(e){}};
+  const num=(k,n)=>safe(ref().child(k).transaction(v=>v===null?n:(typeof v==="number"&&n>v?n:undefined)));
+  const inc=k=>safe(ref().child(k).transaction(v=>(v||0)+1));
+  return{
+    visita(){if(off())return;safe(ref().update({dev:dev,t:TS}));num("paso",0)},
+    paso(n){if(off())return;safe(ref().update({t:TS}));num("paso",n)},   /* paso(1) ... paso(6) */
+    completo(){if(off())return;safe(ref().update({completo:true,t:TS}));num("paso",6)},
+    descarga(){if(off())return;inc("descargas")},
+    reinicio(){if(off())return;inc("reinicios")},
+    bloqueo(){if(off())return;safe(ref().update({bloqueo:true,t:TS}))},
+    quitar(){safe(ref().remove())}   /* el admin no cuenta como visitante */
+  };
+})();
+window.stat=stat;
+stat.visita();
+
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeUrl(u){return /^https?:\/\//i.test(u)?u:"#"}
 function normalize(s){
@@ -118,7 +142,7 @@ function render(snap){
 
 /* ===== SESI脫N DE ADMIN (sin c贸digo, sin l铆mite de tiempo) ===== */
 function startAdmin(){
-  admin=true;
+  admin=true;stat.quitar();
   clearInterval(beat);clearTimeout(awayT);
   $("note").style.display="none";
   showContent();
@@ -179,6 +203,7 @@ async function pulse(){
 }
 
 function startSession(){
+  stat.completo();
   $("note").style.display="block";
   showContent();
   clearInterval(beat);
@@ -211,6 +236,7 @@ async function enter(){
 }
 $("enter").onclick=enter;
 $("code").addEventListener("keydown",e=>{if(e.key==="Enter")enter()});
+$("list").addEventListener("click",e=>{if(e.target.closest("a.btn"))stat.descarga()});
 $("out").onclick=()=>{admin?adminOut("Sesi贸n cerrada."):closeSession("Sesi贸n cerrada.")};
 
 /* ===== si sales de la p谩gina AWAY milisegundos, se cierra (solo invitados) ===== */
@@ -219,10 +245,10 @@ document.addEventListener("visibilitychange",()=>{
   if(document.hidden){
     hiddenAt=Date.now();
     clearTimeout(awayT);
-    awayT=setTimeout(()=>closeSession("Saliste de la p谩gina. Necesitas un c贸digo nuevo."),AWAY);
+    awayT=setTimeout(()=>(stat.reinicio(),closeSession("Saliste de la p谩gina. Necesitas un c贸digo nuevo.")),AWAY);
   }else{
     clearTimeout(awayT);
-    if(hiddenAt&&Date.now()-hiddenAt>=AWAY){closeSession("Saliste de la p谩gina. Necesitas un c贸digo nuevo.")}
+    if(hiddenAt&&Date.now()-hiddenAt>=AWAY){(stat.reinicio(),closeSession("Saliste de la p谩gina. Necesitas un c贸digo nuevo."))}
     else{hiddenAt=0;pulse()}
   }
 });
